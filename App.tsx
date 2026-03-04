@@ -4,14 +4,14 @@ import { AnalysisResult } from './types';
 import { AnalysisReport } from './components/AnalysisReport';
 import { Sparkles, BookText, AlertCircle, FileDown, Settings, Key, X, GraduationCap, School } from 'lucide-react';
 
-const SAMPLE_TEXT = `Kant was a strong defender of the rule of law as the ultimate guarantee, not only of security and peace, but also of freedom. He believed that human societies were moving towards more rational forms regulated by effective and binding legal frameworks because only such frameworks enabled people to live in harmony, to prosper and to co-operate. However, his belief in inevitable progress was not based on an optimistic or high-minded view of human nature. On the contrary, it comes close to Hobbes's outlook: man's violent and conflict-prone nature makes it necessary to establish and maintain an effective legal framework in order to secure peace. We cannot count on people's benevolence or goodwill, but even 'a nation of devils' can live in harmony in a legal system that binds every citizen equally. Ideally, the law is the embodiment of those political principles that all rational beings would freely choose. If such laws forbid them to do something that they would not rationally choose to do anyway, then the law cannot be understood as a restraint on their freedom.`;
+const SAMPLE_TEXT = `Hello, dear directors and teachers, I am Zoops, the creator of this application. I would like to express my deepest gratitude for your continued support and interest in our service. It is truly an honor to provide tools that help you and your students achieve academic excellence. We will continue to improve and evolve to better serve your educational needs in the future.`;
 
 function App() {
   const [input, setInput] = useState(SAMPLE_TEXT);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [analysisMode, setAnalysisMode] = useState<'beginner' | 'expert'>('beginner');
+  const [analysisMode, setAnalysisMode] = useState<'beginner' | 'expert' | 'minimal'>('beginner');
   
   // API Key State
   const [apiKey, setApiKey] = useState('');
@@ -42,7 +42,7 @@ function App() {
     }
   };
 
-  const handleAnalyze = async (mode: 'beginner' | 'expert') => {
+  const handleAnalyze = async (mode: 'beginner' | 'expert' | 'minimal') => {
     if (!input.trim()) return;
     
     if (!apiKey) {
@@ -54,7 +54,7 @@ function App() {
     setAnalysisMode(mode);
     setError(null);
     try {
-      const data = await analyzeText(input, apiKey);
+      const data = await analyzeText(input, apiKey, mode);
       setResult(data);
     } catch (err) {
         console.error(err);
@@ -232,39 +232,58 @@ function App() {
                     )}
                     
                     {/* Buttons Grid */}
-                    <div className="mt-5 grid grid-cols-2 gap-4">
-                        {/* Expert Button (Left) */}
-                        <button
-                            onClick={() => handleAnalyze('expert')}
-                            disabled={loading || !input.trim()}
-                            className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed transition-all"
-                        >
-                            {loading && analysisMode === 'expert' ? (
-                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                            ) : (
-                                <GraduationCap className="w-5 h-5 mr-2" />
-                            )}
-                            분석독해 고수
-                        </button>
+                    <div className="mt-5 grid grid-cols-1 gap-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            {/* Beginner Button (Left) */}
+                            <button
+                                onClick={() => handleAnalyze('beginner')}
+                                disabled={loading || !input.trim()}
+                                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed transition-all"
+                            >
+                                {loading && analysisMode === 'beginner' ? (
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                ) : (
+                                    <School className="w-5 h-5 mr-2" />
+                                )}
+                                AI 분석독해 초보
+                            </button>
 
-                        {/* Beginner Button (Right) */}
+                            {/* Expert Button (Right) */}
+                            <button
+                                onClick={() => handleAnalyze('expert')}
+                                disabled={loading || !input.trim()}
+                                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed transition-all"
+                            >
+                                {loading && analysisMode === 'expert' ? (
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                ) : (
+                                    <GraduationCap className="w-5 h-5 mr-2" />
+                                )}
+                                AI 분석독해 고수
+                            </button>
+                        </div>
+                        
+                        {/* Minimal Button (Full Width) */}
                         <button
-                            onClick={() => handleAnalyze('beginner')}
+                            onClick={() => handleAnalyze('minimal')}
                             disabled={loading || !input.trim()}
-                            className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed transition-all"
+                            className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-md shadow-md text-base font-black text-white bg-slate-800 hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 disabled:bg-slate-400 disabled:cursor-not-allowed transition-all"
                         >
-                            {loading && analysisMode === 'beginner' ? (
-                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            {loading && analysisMode === 'minimal' ? (
+                                <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
                             ) : (
-                                <School className="w-5 h-5 mr-2" />
+                                <Sparkles className="w-6 h-6 mr-2 text-yellow-400" />
                             )}
-                            분석독해 초보
+                            AI 구문분석만
                         </button>
                     </div>
                 </div>
