@@ -265,12 +265,59 @@ const GRAMMAR_QUIZ_PROMPT = `
 </div>
 `;
 
-export const analyzeText = async (text: string, apiKey: string): Promise<AnalysisResult> => {
+export const analyzeText = async (text: string, apiKey: string, mode: 'beginner' | 'expert' | 'minimal' = 'beginner'): Promise<AnalysisResult> => {
   if (!apiKey) {
     throw new Error("API Key is missing. Please provide a valid Google Gemini API Key.");
   }
 
   const ai = new GoogleGenAI({ apiKey: apiKey });
+
+  const isExpertOrMinimal = mode === 'expert' || mode === 'minimal';
+
+  const structureLabelInstruction = isExpertOrMinimal 
+    ? `
+    **EXPERT MODE LABELING RULES (CRITICAL)**:
+    - **GROUPING RULE**: You MUST group words that form a single grammatical unit (e.g., noun phrases, prepositional phrases, infinitive phrases) into a SINGLE chunk with a SINGLE label. Do NOT split them into individual words unless they serve different grammatical functions.
+      - Bad: ["my" (O)], ["deepest" (O)], ["gratitude" (O)]
+      - Good: ["my deepest gratitude" (O)]
+    - Use the following concise symbols for the 'label' field:
+    - Main Clause: 
+      - Subject: "S"
+      - Verb: "V"
+      - Object: "O"
+      - Object Complement: "O.C"
+      - Subject Complement: "S.C"
+      - Modifier (Adjective phrase/word): "M(형)"
+      - Modifier (Adverbial phrase/word): "M(부)"
+      - Modifier (Prepositional phrase): "M(전)"
+      - Modifier (Relative clause): "M(관계사)"
+      - Conjunction: "접속사"
+    - Subordinate Clause (Dependent Clause):
+      - Subject: "S'"
+      - Verb: "V'"
+      - Object: "O'"
+      - Object Complement: "O.C'"
+      - Subject Complement: "S.C'"
+      - Modifier (Adjective phrase/word): "M'(형)"
+      - Modifier (Adverbial phrase/word): "M'(부)"
+      - Modifier (Prepositional phrase): "M'(전)"
+      - Modifier (Relative clause): "M'(관계사)"
+      - Conjunction: "접속사'"
+    
+    Example: In "I think that he is happy", 
+    - "I" (S), "think" (V), "that" (접속사'), "he" (S'), "is" (V'), "happy" (S.C').
+    
+    **IMPORTANT**: Ensure that prepositional phrases like "for your support" are labeled as "M(전)" and kept as a single chunk.
+    `
+    : `
+    **BEGINNER MODE LABELING RULES**:
+    For the 'label' field in each chunk, use descriptive Korean labels:
+    - 주어, 동사, 목적어, 보어, 수식어구, 전치사구, 관계대명사절, 관계부사절, 접속사, 가주어, 진주어 등.
+    `;
+
+  const minimalInstruction = mode === 'minimal' 
+    ? `**MINIMAL MODE**: You only need to provide 'overview' (paragraphSummary, backgroundKnowledge) and 'sentences' (id, original, translation, chunks, grammarNotes). Other fields like 'summary', 'structure', 'signalAnalysis', 'vocabulary', 'grammarPractice', 'paraphrasedText', 'comparison' can be empty or minimal placeholders.`
+    : "";
 
   const prompt = `
     You are an expert English exam analyzer for Korean students (CSAT/TOEIC style).
@@ -278,15 +325,15 @@ export const analyzeText = async (text: string, apiKey: string): Promise<Analysi
     
     Output MUST be a valid JSON object adhering to the schema.
     
+    ${minimalInstruction}
+    
     Key Instructions:
     1. **Sentences**: Break down each sentence into grammatical chunks (Subject, Verb, Object, etc.).
-       - Use specific labels for relative clauses: "관계대명사절" or "관계부사절".
+       ${structureLabelInstruction}
+       - Use specific labels for relative clauses: "관계대명사절" or "관계부사절" (unless in expert or minimal mode, then use "관계사" or "관계사'").
        - **CRITICAL LAYOUT RULE**: Do NOT group long clauses (like relative clauses or prepositional phrases longer than 3-4 words) into a single chunk. 
        - **MUST BREAK DOWN**: You MUST break down long clauses into smaller constituents (e.g. [Relative Pronoun], [Subject], [Verb]) to ensure the visual layout is aligned and readable. 
-         - Bad: ["where van Gogh spent his later years" (Relationship Clause)]
-         - Good: ["where" (Relative Adv)], ["van Gogh" (Subject)], ["spent" (Verb)], ["his later years" (Object)]
        - **IMPORTANT**: For appositive clauses (동격절), you MUST identify them and label them specifically as "동격 that절".
-         - Example: "an opinion that independence is a necessary factor..." -> Chunk 1: "an opinion" (Label: Purpose/Object), Chunk 2: "that independence is..." (Label: 동격 that절).
     
     2. **GRAMMAR NOTES (Critical)**:
        For the 'grammarNotes' field in the JSON output, you MUST strictly follow the analysis rules below.
