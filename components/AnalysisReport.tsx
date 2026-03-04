@@ -19,7 +19,7 @@ import {
 
 interface Props {
   data: AnalysisResult;
-  mode?: 'beginner' | 'expert';
+  mode?: 'beginner' | 'expert' | 'minimal';
 }
 
 // Helper to shuffle words for "Word Ordering"
@@ -72,6 +72,8 @@ const linedPaperStyle = {
 
 export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => {
 
+  const isMinimal = mode === 'minimal';
+
   // Memoize shuffled sentences and blanks
   const shuffledSentences = useMemo(() => {
       return data.sentences.map(s => ({
@@ -103,18 +105,27 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
         <div className="mb-6 border rounded-lg overflow-hidden text-[9pt]">
            <div className="bg-blue-50 p-2 font-bold text-blue-800 border-b">| 목차안내</div>
            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1.5 text-gray-700">
-             <p>(1) 본문개요: 문단의 원문과 구성을 담고 있으며, 지문을 한 눈에 파악합니다.</p>
-             <p>(2) 문장분석: 구조분석과 출제포인트 등을 분석하여 세부 내용을 확인합니다. ({mode === 'expert' ? '고수 모드' : '초보 모드'})</p>
-             <p>(3) 시그널분석: 문장 간의 관계(G/S), 주제/대립, 흐름을 분석합니다.</p>
-             <p>(4) 핵심어휘: 유의어/반의어 및 파생어를 학습합니다.</p>
-             <p>(5) 문장비교: 원문과 패러프레이징 문장을 비교 학습합니다.</p>
-             <p>(6) 본문노트: 문장별 영어 원문과 한글 해석을 정리합니다.</p>
-             <p>(7) 한줄해석: 문장을 단위별로 끊어 읽으며 해석 연습을 합니다.</p>
-             <p>(8) 어순배열: 섞인 단어를 올바르게 배열하여 구문을 익힙니다.</p>
-             <p>(9) 빈칸쓰기: 주요 핵심 어휘와 문법 요소를 채워 넣습니다.</p>
-             <p>(10) 필사연습: 문장을 따라 쓰며 구조와 어휘를 자연스럽게 체화합니다.</p>
-             <p>(11) 영작연습: 주어진 해석을 보고 영어 문장을 직접 작성합니다.</p>
-             <p>(12) 어법선택: 문맥에 맞는 적절한 문법 형태를 고르는 연습을 합니다.</p>
+             {isMinimal ? (
+               <>
+                 <p>(1) 본문개요: 문단의 원문과 구성을 담고 있으며, 지문을 한 눈에 파악합니다.</p>
+                 <p>(2) 문장분석: 구조분석과 출제포인트 등을 분석하여 세부 내용을 확인합니다. (구문분석 모드)</p>
+               </>
+             ) : (
+               <>
+                 <p>(1) 본문개요: 문단의 원문과 구성을 담고 있으며, 지문을 한 눈에 파악합니다.</p>
+                 <p>(2) 문장분석: 구조분석과 출제포인트 등을 분석하여 세부 내용을 확인합니다. ({mode === 'expert' ? '고수 모드' : '초보 모드'})</p>
+                 <p>(3) 시그널분석: 문장 간의 관계(G/S), 주제/대립, 흐름을 분석합니다.</p>
+                 <p>(4) 핵심어휘: 유의어/반의어 및 파생어를 학습합니다.</p>
+                 <p>(5) 문장비교: 원문과 패러프레이징 문장을 비교 학습합니다.</p>
+                 <p>(6) 본문노트: 문장별 영어 원문과 한글 해석을 정리합니다.</p>
+                 <p>(7) 한줄해석: 문장을 단위별로 끊어 읽으며 해석 연습을 합니다.</p>
+                 <p>(8) 어순배열: 섞인 단어를 올바르게 배열하여 구문을 익힙니다.</p>
+                 <p>(9) 빈칸쓰기: 주요 핵심 어휘와 문법 요소를 채워 넣습니다.</p>
+                 <p>(10) 필사연습: 문장을 따라 쓰며 구조와 어휘를 자연스럽게 체화합니다.</p>
+                 <p>(11) 영작연습: 주어진 해석을 보고 영어 문장을 직접 작성합니다.</p>
+                 <p>(12) 어법선택: 문맥에 맞는 적절한 문법 형태를 고르는 연습을 합니다.</p>
+               </>
+             )}
            </div>
         </div>
 
@@ -224,48 +235,50 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
       </div>
 
       {/* --- PAGE 3: Deep Analysis (Main Idea ONLY) --- */}
-      <div className="page-break">
-        <div className="flex items-center mb-6 border-b border-purple-500 pb-2">
-           <h2 className="text-2xl font-bold text-purple-700 mr-4">대의파악</h2>
-           <span className="text-[9pt] tracking-widest text-gray-400 uppercase">Main Idea</span>
-        </div>
+      {!isMinimal && (
+        <div className="page-break">
+          <div className="flex items-center mb-6 border-b border-purple-500 pb-2">
+             <h2 className="text-2xl font-bold text-purple-700 mr-4">대의파악</h2>
+             <span className="text-[9pt] tracking-widest text-gray-400 uppercase">Main Idea</span>
+          </div>
 
-        <div className="grid grid-cols-1 gap-6 items-start">
-            
-            {/* Main Idea Analysis (Full Width) */}
-            <div className="avoid-break h-full">
-                <div className="space-y-3 bg-purple-50/30 p-4 rounded-lg border border-purple-100 h-full">
-                    {[
-                        { label: 'Theme', color: 'bg-purple-100 text-purple-800', contentKr: data.summary.topic, contentEn: data.summary.topicEn },
-                        { label: 'Title', color: 'bg-blue-100 text-blue-800', contentKr: data.summary.title, contentEn: data.summary.titleEn },
-                        { label: 'Main idea', color: 'bg-green-100 text-green-800', contentKr: data.summary.mainIdea, contentEn: data.summary.mainIdeaEn },
-                        { label: 'Summary', color: 'bg-orange-100 text-orange-800', contentKr: data.summary.summary, contentEn: data.summary.summaryEn },
-                    ].map((item, idx) => (
-                        <div key={idx} className="flex flex-col border-b border-purple-100/50 pb-3 last:border-0 last:pb-0">
-                            <span className={`inline-block px-2 py-0.5 rounded text-[8pt] font-bold w-fit mb-1 shadow-sm ${item.color}`}>{item.label}</span>
-                            <div className="space-y-1">
-                                <p className="font-english font-bold text-slate-800 leading-snug text-[10pt]">{item.contentEn}</p>
-                                <p className="text-gray-600 font-medium text-[9pt] leading-snug">{item.contentKr}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+          <div className="grid grid-cols-1 gap-6 items-start">
+              
+              {/* Main Idea Analysis (Full Width) */}
+              <div className="avoid-break h-full">
+                  <div className="space-y-3 bg-purple-50/30 p-4 rounded-lg border border-purple-100 h-full">
+                      {[
+                          { label: 'Theme', color: 'bg-purple-100 text-purple-800', contentKr: data.summary.topic, contentEn: data.summary.topicEn },
+                          { label: 'Title', color: 'bg-blue-100 text-blue-800', contentKr: data.summary.title, contentEn: data.summary.titleEn },
+                          { label: 'Main idea', color: 'bg-green-100 text-green-800', contentKr: data.summary.mainIdea, contentEn: data.summary.mainIdeaEn },
+                          { label: 'Summary', color: 'bg-orange-100 text-orange-800', contentKr: data.summary.summary, contentEn: data.summary.summaryEn },
+                      ].map((item, idx) => (
+                          <div key={idx} className="flex flex-col border-b border-purple-100/50 pb-3 last:border-0 last:pb-0">
+                              <span className={`inline-block px-2 py-0.5 rounded text-[8pt] font-bold w-fit mb-1 shadow-sm ${item.color}`}>{item.label}</span>
+                              <div className="space-y-1">
+                                  <p className="font-english font-bold text-slate-800 leading-snug text-[10pt]">{item.contentEn}</p>
+                                  <p className="text-gray-600 font-medium text-[9pt] leading-snug">{item.contentKr}</p>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+              </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* --- PAGE 4: Sentence Analysis (Conditional Render) --- */}
       <div className="page-break">
          <div className="flex items-center mb-4 border-b border-purple-500 pb-2">
            <h2 className="text-2xl font-bold text-purple-700 mr-4">문장분석</h2>
-           <span className="text-[9pt] tracking-widest text-gray-400 uppercase">Sentence Structure ({mode === 'expert' ? 'Expert' : 'Beginner'})</span>
+           <span className="text-[9pt] tracking-widest text-gray-400 uppercase">Sentence Structure ({mode === 'expert' || mode === 'minimal' ? 'Expert' : 'Beginner'})</span>
         </div>
 
         <div className="space-y-8">
             {data.sentences.map((sent, idx) => {
                 
-                // --- EXPERT MODE (Boxed Layout) ---
-                if (mode === 'expert') {
+                // --- EXPERT/MINIMAL MODE (Boxed Layout) ---
+                if (mode === 'expert' || mode === 'minimal') {
                     return (
                         <div key={sent.id} className="avoid-break border rounded-xl overflow-hidden shadow-sm border-gray-200">
                              {/* Header Row: Number & Chunks */}
@@ -349,7 +362,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
       </div>
 
       {/* --- PAGE 5: Signal Analysis (New Section) --- */}
-      {data.signalAnalysis && (
+      {data.signalAnalysis && !isMinimal && (
         <div className="page-break">
             <div className="flex items-center mb-6 border-b border-teal-500 pb-2">
                 <div className="flex items-center mr-4">
@@ -467,241 +480,257 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
       )}
 
       {/* --- PAGE 6: Vocabulary --- */}
-      <div className="page-break">
-        <div className="flex items-center mb-4 border-b border-green-500 pb-2">
-           <h2 className="text-2xl font-bold text-green-700 mr-4">핵심어휘</h2>
-           <span className="text-[9pt] tracking-widest text-gray-400 uppercase">Vocabulary</span>
+      {!isMinimal && (
+        <div className="page-break">
+          <div className="flex items-center mb-4 border-b border-green-500 pb-2">
+             <h2 className="text-2xl font-bold text-green-700 mr-4">핵심어휘</h2>
+             <span className="text-[9pt] tracking-widest text-gray-400 uppercase">Vocabulary</span>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-3 print:gap-x-4 print:gap-y-2">
+              {data.vocabulary.map((vocab, idx) => (
+                  <div key={idx} className="border rounded-lg p-3 print:p-1.5 bg-white shadow-sm avoid-break">
+                      <div className="flex justify-between items-baseline mb-1 border-b pb-1 border-gray-100">
+                          <span className="text-[11pt] font-bold text-blue-700 font-english">{vocab.word}</span>
+                          <span className="text-[9pt] font-medium text-gray-900">{vocab.meaning}</span>
+                      </div>
+                      <div className="text-[9pt] space-y-1 print:space-y-0.5 text-gray-600">
+                          <div className="flex">
+                              <span className="w-14 flex-shrink-0 font-bold text-gray-400 whitespace-nowrap">[정의]</span>
+                              <span className="flex-1 text-gray-700">{vocab.definition}</span>
+                          </div>
+                           <div className="flex">
+                              <span className="w-14 flex-shrink-0 font-bold text-blue-400 whitespace-nowrap">[유의어]</span>
+                              <span className="flex-1 leading-tight">{vocab.synonyms.join(', ')}</span>
+                          </div>
+                           <div className="flex">
+                              <span className="w-14 flex-shrink-0 font-bold text-red-400 whitespace-nowrap">[반의어]</span>
+                              <span className="flex-1 leading-tight">{vocab.antonyms.join(', ')}</span>
+                          </div>
+                          {vocab.example && (
+                              <div className="flex mt-1 pt-1 border-t border-dashed border-gray-100">
+                                  <span className="w-14 flex-shrink-0 font-bold text-purple-400 whitespace-nowrap">[예문]</span>
+                                  <span className="flex-1 italic text-gray-500 font-english leading-tight">"{vocab.example}"</span>
+                              </div>
+                          )}
+                      </div>
+                  </div>
+              ))}
+          </div>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-3 print:gap-x-4 print:gap-y-2">
-            {data.vocabulary.map((vocab, idx) => (
-                <div key={idx} className="border rounded-lg p-3 print:p-1.5 bg-white shadow-sm avoid-break">
-                    <div className="flex justify-between items-baseline mb-1 border-b pb-1 border-gray-100">
-                        <span className="text-[11pt] font-bold text-blue-700 font-english">{vocab.word}</span>
-                        <span className="text-[9pt] font-medium text-gray-900">{vocab.meaning}</span>
-                    </div>
-                    <div className="text-[9pt] space-y-1 print:space-y-0.5 text-gray-600">
-                        <div className="flex">
-                            <span className="w-14 flex-shrink-0 font-bold text-gray-400 whitespace-nowrap">[정의]</span>
-                            <span className="flex-1 text-gray-700">{vocab.definition}</span>
-                        </div>
-                         <div className="flex">
-                            <span className="w-14 flex-shrink-0 font-bold text-blue-400 whitespace-nowrap">[유의어]</span>
-                            <span className="flex-1 leading-tight">{vocab.synonyms.join(', ')}</span>
-                        </div>
-                         <div className="flex">
-                            <span className="w-14 flex-shrink-0 font-bold text-red-400 whitespace-nowrap">[반의어]</span>
-                            <span className="flex-1 leading-tight">{vocab.antonyms.join(', ')}</span>
-                        </div>
-                        {vocab.example && (
-                            <div className="flex mt-1 pt-1 border-t border-dashed border-gray-100">
-                                <span className="w-14 flex-shrink-0 font-bold text-purple-400 whitespace-nowrap">[예문]</span>
-                                <span className="flex-1 italic text-gray-500 font-english leading-tight">"{vocab.example}"</span>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            ))}
-        </div>
-      </div>
+      )}
       
       {/* --- PAGE 7: Comparison --- */}
-      <div className="page-break">
-        <div className="flex items-center mb-4 border-b border-orange-500 pb-2">
-           <h2 className="text-2xl font-bold text-orange-700 mr-4">문장비교</h2>
-           <span className="text-[9pt] tracking-widest text-gray-400 uppercase">Original vs Paraphrase</span>
-        </div>
+      {!isMinimal && (
+        <div className="page-break">
+          <div className="flex items-center mb-4 border-b border-orange-500 pb-2">
+             <h2 className="text-2xl font-bold text-orange-700 mr-4">문장비교</h2>
+             <span className="text-[9pt] tracking-widest text-gray-400 uppercase">Original vs Paraphrase</span>
+          </div>
 
-        <div className="space-y-4 print:space-y-2">
-            {data.comparison.map((comp, idx) => (
-                <div key={idx} className="grid grid-cols-1 print:grid-cols-2 md:grid-cols-2 gap-4 print:gap-2 avoid-break text-[9pt] border-b border-gray-100 pb-4 print:pb-2 last:border-0">
-                    <div className="bg-gray-50 p-3 print:p-2 rounded border">
-                        <div className="font-bold text-blue-800 mb-1 text-[8pt] uppercase">Original</div>
-                        <p className="font-english leading-relaxed">{comp.original}</p>
-                    </div>
-                    <div className="bg-orange-50 p-3 print:p-2 rounded border border-orange-100">
-                        <div className="font-bold text-orange-800 mb-1 text-[8pt] uppercase">Paraphrased</div>
-                        <p className="font-english leading-relaxed">{comp.paraphrased}</p>
-                    </div>
-                </div>
-            ))}
+          <div className="space-y-4 print:space-y-2">
+              {data.comparison.map((comp, idx) => (
+                  <div key={idx} className="grid grid-cols-1 print:grid-cols-2 md:grid-cols-2 gap-4 print:gap-2 avoid-break text-[9pt] border-b border-gray-100 pb-4 print:pb-2 last:border-0">
+                      <div className="bg-gray-50 p-3 print:p-2 rounded border">
+                          <div className="font-bold text-blue-800 mb-1 text-[8pt] uppercase">Original</div>
+                          <p className="font-english leading-relaxed">{comp.original}</p>
+                      </div>
+                      <div className="bg-orange-50 p-3 print:p-2 rounded border border-orange-100">
+                          <div className="font-bold text-orange-800 mb-1 text-[8pt] uppercase">Paraphrased</div>
+                          <p className="font-english leading-relaxed">{comp.paraphrased}</p>
+                      </div>
+                  </div>
+              ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* --- WORKSHEETS SECTION --- */}
 
       {/* --- PAGE 8: Body Note (Indigo Theme) --- */}
-      <div className="page-break">
-        <WorksheetHeader 
-            title="본문노트" 
-            engTitle="Text Note" 
-            borderColor="border-indigo-500" 
-            textColor="text-indigo-800"
-            icon={<FileText className="w-6 h-6 text-indigo-600" />}
-        />
-        <div className="grid grid-cols-12 gap-4 font-english border-b-2 border-indigo-100 pb-2 mb-4 text-[9pt] font-bold text-indigo-400 uppercase">
-            <div className="col-span-6">English</div>
-            <div className="col-span-6">Korean</div>
+      {!isMinimal && (
+        <div className="page-break">
+          <WorksheetHeader 
+              title="본문노트" 
+              engTitle="Text Note" 
+              borderColor="border-indigo-500" 
+              textColor="text-indigo-800"
+              icon={<FileText className="w-6 h-6 text-indigo-600" />}
+          />
+          <div className="grid grid-cols-12 gap-4 font-english border-b-2 border-indigo-100 pb-2 mb-4 text-[9pt] font-bold text-indigo-400 uppercase">
+              <div className="col-span-6">English</div>
+              <div className="col-span-6">Korean</div>
+          </div>
+          <div className="space-y-4 print:space-y-2">
+              {data.sentences.map((sent, idx) => (
+                  <div key={sent.id} className="grid grid-cols-12 gap-4 print:gap-2 items-start avoid-break border-b border-gray-100 pb-3 print:pb-2">
+                      <div className="col-span-6 flex">
+                          <span className="text-[8pt] font-bold text-indigo-600 mr-2 mt-1 bg-indigo-50 w-4 h-4 flex items-center justify-center rounded-full flex-shrink-0 border border-indigo-100">{String(idx + 1).padStart(2, '0')}</span>
+                          <p className="text-[9pt] text-gray-900 leading-relaxed font-english">{sent.original}</p>
+                      </div>
+                      <div className="col-span-6">
+                          <p className="text-[9pt] text-gray-600 leading-relaxed font-medium font-sans pt-0.5">{sent.translation}</p>
+                      </div>
+                  </div>
+              ))}
+          </div>
         </div>
-        <div className="space-y-4 print:space-y-2">
-            {data.sentences.map((sent, idx) => (
-                <div key={sent.id} className="grid grid-cols-12 gap-4 print:gap-2 items-start avoid-break border-b border-gray-100 pb-3 print:pb-2">
-                    <div className="col-span-6 flex">
-                        <span className="text-[8pt] font-bold text-indigo-600 mr-2 mt-1 bg-indigo-50 w-4 h-4 flex items-center justify-center rounded-full flex-shrink-0 border border-indigo-100">{String(idx + 1).padStart(2, '0')}</span>
-                        <p className="text-[9pt] text-gray-900 leading-relaxed font-english">{sent.original}</p>
-                    </div>
-                    <div className="col-span-6">
-                        <p className="text-[9pt] text-gray-600 leading-relaxed font-medium font-sans pt-0.5">{sent.translation}</p>
-                    </div>
-                </div>
-            ))}
-        </div>
-      </div>
+      )}
 
       {/* --- PAGE 9: One-line Interpretation (Teal Theme) --- */}
-      <div className="page-break">
-        <WorksheetHeader 
-            title="한줄해석" 
-            engTitle="Interpretation Practice" 
-            borderColor="border-teal-500" 
-            textColor="text-teal-800"
-            icon={<MessageCircle className="w-6 h-6 text-teal-600" />}
-        />
-        <div className="space-y-4 print:space-y-2">
-             {data.sentences.map((sent, idx) => (
-                <div key={sent.id} className="avoid-break">
-                    <div className="flex items-start mb-2 print:mb-1">
-                        <span className="text-[8pt] font-bold text-white bg-teal-600 px-1.5 py-0.5 rounded mr-2 mt-0.5 shadow-sm">{String(idx + 1).padStart(2, '0')}</span>
-                        <p className="text-[9pt] text-gray-900 font-english leading-relaxed">{sent.original}</p>
-                    </div>
-                    {/* Writing lines */}
-                    <div className="w-full" style={linedPaperStyle}>
-                        <div className="h-[5rem]"></div> {/* 2 lines * 2.5rem */}
-                    </div>
-                </div>
-            ))}
+      {!isMinimal && (
+        <div className="page-break">
+          <WorksheetHeader 
+              title="한줄해석" 
+              engTitle="Interpretation Practice" 
+              borderColor="border-teal-500" 
+              textColor="text-teal-800"
+              icon={<MessageCircle className="w-6 h-6 text-teal-600" />}
+          />
+          <div className="space-y-4 print:space-y-2">
+               {data.sentences.map((sent, idx) => (
+                  <div key={sent.id} className="avoid-break">
+                      <div className="flex items-start mb-2 print:mb-1">
+                          <span className="text-[8pt] font-bold text-white bg-teal-600 px-1.5 py-0.5 rounded mr-2 mt-0.5 shadow-sm">{String(idx + 1).padStart(2, '0')}</span>
+                          <p className="text-[9pt] text-gray-900 font-english leading-relaxed">{sent.original}</p>
+                      </div>
+                      {/* Writing lines */}
+                      <div className="w-full" style={linedPaperStyle}>
+                          <div className="h-[5rem]"></div> {/* 2 lines * 2.5rem */}
+                      </div>
+                  </div>
+              ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* --- PAGE 10: Word Ordering (Rose Theme) --- */}
-      <div className="page-break">
-        <WorksheetHeader 
-            title="어순배열" 
-            engTitle="Word Ordering" 
-            borderColor="border-rose-500" 
-            textColor="text-rose-800"
-            icon={<Shuffle className="w-6 h-6 text-rose-600" />}
-        />
-        <div className="space-y-4 print:space-y-2">
-             {data.sentences.map((sent, idx) => (
-                <div key={sent.id} className="avoid-break">
-                    <div className="flex items-start mb-2 print:mb-1">
-                        <div className="bg-rose-600 text-white text-[8pt] font-bold px-1.5 py-0.5 rounded mr-2 mt-0.5 shadow-sm">
-                            {String(idx + 1).padStart(2, '0')}
-                        </div>
-                        <p className="text-[9pt] text-gray-800 font-bold font-sans leading-relaxed">{sent.translation}</p>
-                    </div>
-                    
-                    <div className="bg-rose-50 border border-rose-200 p-2 rounded mb-2 print:mb-1 text-[9pt] text-rose-900 font-english leading-relaxed tracking-wide shadow-sm">
-                        {shuffledSentences[idx].shuffled}
-                    </div>
+      {!isMinimal && (
+        <div className="page-break">
+          <WorksheetHeader 
+              title="어순배열" 
+              engTitle="Word Ordering" 
+              borderColor="border-rose-500" 
+              textColor="text-rose-800"
+              icon={<Shuffle className="w-6 h-6 text-rose-600" />}
+          />
+          <div className="space-y-4 print:space-y-2">
+               {data.sentences.map((sent, idx) => (
+                  <div key={sent.id} className="avoid-break">
+                      <div className="flex items-start mb-2 print:mb-1">
+                          <div className="bg-rose-600 text-white text-[8pt] font-bold px-1.5 py-0.5 rounded mr-2 mt-0.5 shadow-sm">
+                              {String(idx + 1).padStart(2, '0')}
+                          </div>
+                          <p className="text-[9pt] text-gray-800 font-bold font-sans leading-relaxed">{sent.translation}</p>
+                      </div>
+                      
+                      <div className="bg-rose-50 border border-rose-200 p-2 rounded mb-2 print:mb-1 text-[9pt] text-rose-900 font-english leading-relaxed tracking-wide shadow-sm">
+                          {shuffledSentences[idx].shuffled}
+                      </div>
 
-                    <div className="w-full border-b border-gray-300" style={linedPaperStyle}>
-                        <div className="h-[5rem]"></div> {/* 2 lines * 2.5rem */}
-                    </div>
-                </div>
-            ))}
+                      <div className="w-full border-b border-gray-300" style={linedPaperStyle}>
+                          <div className="h-[5rem]"></div> {/* 2 lines * 2.5rem */}
+                      </div>
+                  </div>
+              ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* --- PAGE 11: Fill in the Blanks (Cyan Theme) --- */}
-      <div className="page-break">
-        <WorksheetHeader 
-            title="빈칸쓰기" 
-            engTitle="Fill in the Blanks" 
-            borderColor="border-cyan-500" 
-            textColor="text-cyan-800"
-            icon={<PenTool className="w-6 h-6 text-cyan-600" />}
-        />
-        <div className="space-y-4 print:space-y-2">
-             {data.sentences.map((sent, idx) => (
-                <div key={sent.id} className="avoid-break">
-                    <div className="flex items-start mb-1">
-                         <span className="text-[9pt] font-black text-cyan-600 mr-2 mt-1.5">{String(idx + 1).padStart(2, '0')}</span>
-                         <p className="text-[9pt] text-gray-800 font-english leading-relaxed tracking-wide">
-                            {blankSentences[idx].text}
-                         </p>
-                    </div>
-                    <p className="pl-6 text-[9pt] text-gray-400 font-sans">{sent.translation}</p>
-                </div>
-            ))}
+      {!isMinimal && (
+        <div className="page-break">
+          <WorksheetHeader 
+              title="빈칸쓰기" 
+              engTitle="Fill in the Blanks" 
+              borderColor="border-cyan-500" 
+              textColor="text-cyan-800"
+              icon={<PenTool className="w-6 h-6 text-cyan-600" />}
+          />
+          <div className="space-y-4 print:space-y-2">
+               {data.sentences.map((sent, idx) => (
+                  <div key={sent.id} className="avoid-break">
+                      <div className="flex items-start mb-1">
+                           <span className="text-[9pt] font-black text-cyan-600 mr-2 mt-1.5">{String(idx + 1).padStart(2, '0')}</span>
+                           <p className="text-[9pt] text-gray-800 font-english leading-relaxed tracking-wide">
+                              {blankSentences[idx].text}
+                           </p>
+                      </div>
+                      <p className="pl-6 text-[9pt] text-gray-400 font-sans">{sent.translation}</p>
+                  </div>
+              ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* --- PAGE 12: Tracing Practice (Violet Theme) --- */}
-      <div className="page-break">
-        <WorksheetHeader 
-            title="필사연습" 
-            engTitle="Tracing Practice" 
-            borderColor="border-violet-500" 
-            textColor="text-violet-800"
-            icon={<Highlighter className="w-6 h-6 text-violet-600" />}
-        />
-        <div className="space-y-4 print:space-y-3">
-             {data.sentences.map((sent, idx) => (
-                <div key={sent.id} className="avoid-break">
-                    <div className="flex items-start mb-1">
-                        <span className="text-[8pt] font-bold text-violet-500 mr-2 mt-0.5 border border-violet-200 bg-violet-50 rounded px-1.5 py-0.5">{String(idx + 1).padStart(2, '0')}</span>
-                        <p className="text-[9pt] text-gray-600 font-medium font-sans leading-relaxed">{sent.translation}</p>
-                    </div>
-                    
-                    {/* Tracing area with background lines */}
-                    <div className="relative pl-8">
-                        <p 
-                            className="font-english text-lg text-gray-200 leading-[2.5rem]" 
-                            style={linedPaperStyle}
-                        >
-                            {sent.original}
-                        </p>
-                    </div>
-                </div>
-            ))}
+      {!isMinimal && (
+        <div className="page-break">
+          <WorksheetHeader 
+              title="필사연습" 
+              engTitle="Tracing Practice" 
+              borderColor="border-violet-500" 
+              textColor="text-violet-800"
+              icon={<Highlighter className="w-6 h-6 text-violet-600" />}
+          />
+          <div className="space-y-4 print:space-y-3">
+               {data.sentences.map((sent, idx) => (
+                  <div key={sent.id} className="avoid-break">
+                      <div className="flex items-start mb-1">
+                          <span className="text-[8pt] font-bold text-violet-500 mr-2 mt-0.5 border border-violet-200 bg-violet-50 rounded px-1.5 py-0.5">{String(idx + 1).padStart(2, '0')}</span>
+                          <p className="text-[9pt] text-gray-600 font-medium font-sans leading-relaxed">{sent.translation}</p>
+                      </div>
+                      
+                      {/* Tracing area with background lines */}
+                      <div className="relative pl-8">
+                          <p 
+                              className="font-english text-lg text-gray-200 leading-[2.5rem]" 
+                              style={linedPaperStyle}
+                          >
+                              {sent.original}
+                          </p>
+                      </div>
+                  </div>
+              ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* --- PAGE 13: Writing Practice (Emerald Theme) --- */}
-      <div className="page-break">
-        <WorksheetHeader 
-            title="영작연습" 
-            engTitle="Writing Practice" 
-            borderColor="border-emerald-500" 
-            textColor="text-emerald-800" 
-            icon={<Edit className="w-6 h-6 text-emerald-600" />}
-        />
-        <div className="space-y-4 print:space-y-3">
-             {data.sentences.map((sent, idx) => (
-                <div key={sent.id} className="avoid-break">
-                    <div className="flex items-start mb-1">
-                        <div className="bg-emerald-600 text-white text-[8pt] font-bold px-1.5 py-0.5 rounded mr-2 mt-0.5 shadow-sm">
-                            {String(idx + 1).padStart(2, '0')}
-                        </div>
-                        <p className="text-[9pt] text-gray-800 font-bold font-sans leading-relaxed">{sent.translation}</p>
-                    </div>
-                    
-                    {/* Empty lines for writing */}
-                    <div className="pl-6">
-                         <div style={linedPaperStyle}>
-                            {/* 3 lines * 2.5rem = 7.5rem */}
-                            <div className="h-[7.5rem]"></div>
-                        </div>
-                    </div>
-                </div>
-            ))}
+      {!isMinimal && (
+        <div className="page-break">
+          <WorksheetHeader 
+              title="영작연습" 
+              engTitle="Writing Practice" 
+              borderColor="border-emerald-500" 
+              textColor="text-emerald-800" 
+              icon={<Edit className="w-6 h-6 text-emerald-600" />}
+          />
+          <div className="space-y-4 print:space-y-3">
+               {data.sentences.map((sent, idx) => (
+                  <div key={sent.id} className="avoid-break">
+                      <div className="flex items-start mb-1">
+                          <div className="bg-emerald-600 text-white text-[8pt] font-bold px-1.5 py-0.5 rounded mr-2 mt-0.5 shadow-sm">
+                              {String(idx + 1).padStart(2, '0')}
+                          </div>
+                          <p className="text-[9pt] text-gray-800 font-bold font-sans leading-relaxed">{sent.translation}</p>
+                      </div>
+                      
+                      {/* Empty lines for writing */}
+                      <div className="pl-6">
+                           <div style={linedPaperStyle}>
+                              {/* 3 lines * 2.5rem = 7.5rem */}
+                              <div className="h-[7.5rem]"></div>
+                          </div>
+                      </div>
+                  </div>
+              ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* --- PAGE 14: Grammar Selection Practice (Slate Theme) --- */}
-       {data.grammarPractice && (
+       {data.grammarPractice && !isMinimal && (
         <div className="page-break">
             {/* Consistent Worksheet Header - Slate Theme */}
             <WorksheetHeader 
