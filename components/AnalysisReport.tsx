@@ -19,7 +19,7 @@ import {
 
 interface Props {
   data: AnalysisResult;
-  mode?: 'beginner' | 'expert' | 'minimal';
+  mode?: 'beginner' | 'expert' | 'minimal' | 'workbook';
 }
 
 // Helper to shuffle words for "Word Ordering"
@@ -73,6 +73,7 @@ const linedPaperStyle = {
 export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => {
 
   const isMinimal = mode === 'minimal';
+  const isWorkbook = mode === 'workbook';
 
   // Memoize shuffled sentences and blanks
   const shuffledSentences = useMemo(() => {
@@ -110,6 +111,18 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
                  <p>(1) 본문개요: 문단의 원문과 구성을 담고 있으며, 지문을 한 눈에 파악합니다.</p>
                  <p>(2) 문장분석: 구조분석과 출제포인트 등을 분석하여 세부 내용을 확인합니다. (구문분석 모드)</p>
                </>
+             ) : isWorkbook ? (
+               <>
+                 <p>(1) 핵심어휘: 유의어/반의어 및 파생어를 학습합니다.</p>
+                 <p>(2) 문장비교: 원문과 패러프레이징 문장을 비교 학습합니다.</p>
+                 <p>(3) 본문노트: 문장별 영어 원문과 한글 해석을 정리합니다.</p>
+                 <p>(4) 한줄해석: 문장을 단위별로 끊어 읽으며 해석 연습을 합니다.</p>
+                 <p>(5) 어순배열: 섞인 단어를 올바르게 배열하여 구문을 익힙니다.</p>
+                 <p>(6) 빈칸쓰기: 주요 핵심 어휘와 문법 요소를 채워 넣습니다.</p>
+                 <p>(7) 필사연습: 문장을 따라 쓰며 구조와 어휘를 자연스럽게 체화합니다.</p>
+                 <p>(8) 영작연습: 주어진 해석을 보고 영어 문장을 직접 작성합니다.</p>
+                 <p>(9) 어법선택: 문맥에 맞는 적절한 문법 형태를 고르는 연습을 합니다.</p>
+               </>
              ) : (
                <>
                  <p>(1) 본문개요: 문단의 원문과 구성을 담고 있으며, 지문을 한 눈에 파악합니다.</p>
@@ -129,113 +142,117 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
            </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-4 mb-8 text-[9pt]">
-             <div className="col-span-12 border rounded p-3">
-                <h4 className="font-bold text-blue-800 mb-2 border-b pb-1">문장구조 표기방식</h4>
-                <div className="flex flex-wrap gap-3 font-medium text-gray-700 justify-center">
-                    <span className="flex items-center gap-1">
-                        <span className="text-white bg-red-600 px-1.5 py-0.5 rounded text-[8pt] font-bold shadow-sm">주어</span>
-                    </span>
-                    <span className="flex items-center gap-1">
-                        <span className="text-white bg-blue-600 px-1.5 py-0.5 rounded text-[8pt] font-bold shadow-sm">동사</span>
-                    </span>
-                    <span className="flex items-center gap-1">
-                        <span className="text-white bg-green-600 px-1.5 py-0.5 rounded text-[8pt] font-bold shadow-sm">목적어</span>
-                    </span>
-                    <span className="flex items-center gap-1">
-                        <span className="text-white bg-purple-600 px-1.5 py-0.5 rounded text-[8pt] font-bold shadow-sm">보어</span>
-                    </span>
-                    <span className="flex items-center gap-1">
-                        <span className="text-white bg-orange-600 px-1.5 py-0.5 rounded text-[8pt] font-bold shadow-sm">전치사구</span>
-                    </span>
-                    <span className="flex items-center gap-1">
-                        <span className="text-white bg-teal-600 px-1.5 py-0.5 rounded text-[8pt] font-bold shadow-sm">연결어</span>
-                    </span>
-                    <span className="flex items-center gap-1">
-                        <span className="text-white bg-gray-500 px-1.5 py-0.5 rounded text-[8pt] font-bold shadow-sm">수식어</span>
-                    </span>
-                </div>
-            </div>
-        </div>
+        {!isWorkbook && (
+          <div className="grid grid-cols-12 gap-4 mb-8 text-[9pt]">
+               <div className="col-span-12 border rounded p-3">
+                  <h4 className="font-bold text-blue-800 mb-2 border-b pb-1">문장구조 표기방식</h4>
+                  <div className="flex flex-wrap gap-3 font-medium text-gray-700 justify-center">
+                      <span className="flex items-center gap-1">
+                          <span className="text-white bg-red-600 px-1.5 py-0.5 rounded text-[8pt] font-bold shadow-sm">주어</span>
+                      </span>
+                      <span className="flex items-center gap-1">
+                          <span className="text-white bg-blue-600 px-1.5 py-0.5 rounded text-[8pt] font-bold shadow-sm">동사</span>
+                      </span>
+                      <span className="flex items-center gap-1">
+                          <span className="text-white bg-green-600 px-1.5 py-0.5 rounded text-[8pt] font-bold shadow-sm">목적어</span>
+                      </span>
+                      <span className="flex items-center gap-1">
+                          <span className="text-white bg-purple-600 px-1.5 py-0.5 rounded text-[8pt] font-bold shadow-sm">보어</span>
+                      </span>
+                      <span className="flex items-center gap-1">
+                          <span className="text-white bg-orange-600 px-1.5 py-0.5 rounded text-[8pt] font-bold shadow-sm">전치사구</span>
+                      </span>
+                      <span className="flex items-center gap-1">
+                          <span className="text-white bg-teal-600 px-1.5 py-0.5 rounded text-[8pt] font-bold shadow-sm">연결어</span>
+                      </span>
+                      <span className="flex items-center gap-1">
+                          <span className="text-white bg-gray-500 px-1.5 py-0.5 rounded text-[8pt] font-bold shadow-sm">수식어</span>
+                      </span>
+                  </div>
+              </div>
+          </div>
+        )}
       </div>
 
       {/* --- PAGE 2: Overview Details --- */}
-      <div className="page-break">
-        <div className="flex items-center mb-4">
-           <h2 className="text-2xl font-bold text-blue-700 mr-4">본문개요</h2>
-           <span className="text-[9pt] tracking-widest text-gray-400 uppercase">Paragraph Summary</span>
+      {!isWorkbook && (
+        <div className="page-break">
+          <div className="flex items-center mb-4">
+             <h2 className="text-2xl font-bold text-blue-700 mr-4">본문개요</h2>
+             <span className="text-[9pt] tracking-widest text-gray-400 uppercase">Paragraph Summary</span>
+          </div>
+          
+          <div className="bg-gray-50 p-5 rounded-lg border border-gray-200 mb-6 print:mb-4 shadow-sm">
+              <p className="font-english text-justify leading-7 text-gray-800 text-[9pt] mb-3">
+                  {data.sentences.map(s => s.original).join(' ')}
+              </p>
+              <div className="border-t pt-3 text-gray-600 leading-relaxed font-light text-[9pt] text-justify">
+                  {data.sentences.map(s => s.translation).join(' ')}
+              </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-6 print:gap-4 mb-6 print:mb-0">
+              <div className="border rounded-lg p-3">
+                  <h3 className="text-blue-600 font-bold mb-2 flex items-center text-[9pt]">
+                      <BookOpen className="w-3 h-3 mr-2" /> 배경지식
+                  </h3>
+                  <div className="text-[9pt] text-gray-700 leading-relaxed bg-blue-50/50 p-2 rounded">
+                      {data.overview.backgroundKnowledge}
+                  </div>
+              </div>
+              
+               {/* Structure Flow Chart */}
+               {data.structure && (
+                  <div className="border rounded-lg p-3 avoid-break">
+                      <h3 className="text-blue-600 font-bold mb-2 flex items-center text-[9pt]">
+                          <Share2 className="w-3 h-3 mr-2" /> 글의 흐름 (Structure Flow)
+                      </h3>
+                      <div className="flex flex-col gap-2 bg-gray-50 p-3 rounded print:space-y-1">
+                          {/* Introduction */}
+                           <div className="flex items-start bg-white border border-gray-200 p-2 rounded shadow-sm">
+                              <span className="bg-indigo-100 text-indigo-800 text-[8pt] font-bold px-2 py-0.5 rounded mr-2 flex-shrink-0">서론</span>
+                              <div className="text-[9pt] leading-tight">
+                                  <p className="font-bold text-gray-800">{data.structure.introduction.en}</p>
+                                  <p className="text-gray-600 text-[8pt]">{data.structure.introduction.kr}</p>
+                              </div>
+                           </div>
+                           
+                           {/* Arrow */}
+                           <div className="flex justify-center text-gray-400 print:hidden">
+                              <ArrowRight className="w-4 h-4 rotate-90" />
+                           </div>
+
+                           {/* Body */}
+                           <div className="flex items-start bg-white border border-gray-200 p-2 rounded shadow-sm">
+                              <span className="bg-violet-100 text-violet-800 text-[8pt] font-bold px-2 py-0.5 rounded mr-2 flex-shrink-0">본론</span>
+                              <div className="text-[9pt] leading-tight">
+                                  <p className="font-bold text-gray-800">{data.structure.body.en}</p>
+                                  <p className="text-gray-600 text-[8pt]">{data.structure.body.kr}</p>
+                              </div>
+                           </div>
+
+                           {/* Arrow */}
+                           <div className="flex justify-center text-gray-400 print:hidden">
+                               <ArrowRight className="w-4 h-4 rotate-90" />
+                           </div>
+
+                           {/* Conclusion */}
+                           <div className="flex items-start bg-white border border-gray-200 p-2 rounded shadow-sm">
+                              <span className="bg-pink-100 text-pink-800 text-[8pt] font-bold px-2 py-0.5 rounded mr-2 flex-shrink-0">결론</span>
+                              <div className="text-[9pt] leading-tight">
+                                  <p className="font-bold text-gray-800">{data.structure.conclusion.en}</p>
+                                  <p className="text-gray-600 text-[8pt]">{data.structure.conclusion.kr}</p>
+                              </div>
+                           </div>
+                      </div>
+                  </div>
+              )}
+          </div>
         </div>
-        
-        <div className="bg-gray-50 p-5 rounded-lg border border-gray-200 mb-6 print:mb-4 shadow-sm">
-            <p className="font-english text-justify leading-7 text-gray-800 text-[9pt] mb-3">
-                {data.sentences.map(s => s.original).join(' ')}
-            </p>
-            <div className="border-t pt-3 text-gray-600 leading-relaxed font-light text-[9pt] text-justify">
-                {data.sentences.map(s => s.translation).join(' ')}
-            </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-6 print:gap-4 mb-6 print:mb-0">
-            <div className="border rounded-lg p-3">
-                <h3 className="text-blue-600 font-bold mb-2 flex items-center text-[9pt]">
-                    <BookOpen className="w-3 h-3 mr-2" /> 배경지식
-                </h3>
-                <div className="text-[9pt] text-gray-700 leading-relaxed bg-blue-50/50 p-2 rounded">
-                    {data.overview.backgroundKnowledge}
-                </div>
-            </div>
-            
-             {/* Structure Flow Chart */}
-             {data.structure && (
-                <div className="border rounded-lg p-3 avoid-break">
-                    <h3 className="text-blue-600 font-bold mb-2 flex items-center text-[9pt]">
-                        <Share2 className="w-3 h-3 mr-2" /> 글의 흐름 (Structure Flow)
-                    </h3>
-                    <div className="flex flex-col gap-2 bg-gray-50 p-3 rounded print:space-y-1">
-                        {/* Introduction */}
-                         <div className="flex items-start bg-white border border-gray-200 p-2 rounded shadow-sm">
-                            <span className="bg-indigo-100 text-indigo-800 text-[8pt] font-bold px-2 py-0.5 rounded mr-2 flex-shrink-0">서론</span>
-                            <div className="text-[9pt] leading-tight">
-                                <p className="font-bold text-gray-800">{data.structure.introduction.en}</p>
-                                <p className="text-gray-600 text-[8pt]">{data.structure.introduction.kr}</p>
-                            </div>
-                         </div>
-                         
-                         {/* Arrow */}
-                         <div className="flex justify-center text-gray-400 print:hidden">
-                            <ArrowRight className="w-4 h-4 rotate-90" />
-                         </div>
-
-                         {/* Body */}
-                         <div className="flex items-start bg-white border border-gray-200 p-2 rounded shadow-sm">
-                            <span className="bg-violet-100 text-violet-800 text-[8pt] font-bold px-2 py-0.5 rounded mr-2 flex-shrink-0">본론</span>
-                            <div className="text-[9pt] leading-tight">
-                                <p className="font-bold text-gray-800">{data.structure.body.en}</p>
-                                <p className="text-gray-600 text-[8pt]">{data.structure.body.kr}</p>
-                            </div>
-                         </div>
-
-                         {/* Arrow */}
-                         <div className="flex justify-center text-gray-400 print:hidden">
-                             <ArrowRight className="w-4 h-4 rotate-90" />
-                         </div>
-
-                         {/* Conclusion */}
-                         <div className="flex items-start bg-white border border-gray-200 p-2 rounded shadow-sm">
-                            <span className="bg-pink-100 text-pink-800 text-[8pt] font-bold px-2 py-0.5 rounded mr-2 flex-shrink-0">결론</span>
-                            <div className="text-[9pt] leading-tight">
-                                <p className="font-bold text-gray-800">{data.structure.conclusion.en}</p>
-                                <p className="text-gray-600 text-[8pt]">{data.structure.conclusion.kr}</p>
-                            </div>
-                         </div>
-                    </div>
-                </div>
-            )}
-        </div>
-      </div>
+      )}
 
       {/* --- PAGE 3: Deep Analysis (Main Idea ONLY) --- */}
-      {!isMinimal && (
+      {!isMinimal && !isWorkbook && (
         <div className="page-break">
           <div className="flex items-center mb-6 border-b border-purple-500 pb-2">
              <h2 className="text-2xl font-bold text-purple-700 mr-4">대의파악</h2>
@@ -268,7 +285,8 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
       )}
 
       {/* --- PAGE 4: Sentence Analysis (Conditional Render) --- */}
-      <div className="page-break">
+      {!isWorkbook && (
+        <div className="page-break">
          <div className="flex items-center mb-4 border-b border-purple-500 pb-2">
            <h2 className="text-2xl font-bold text-purple-700 mr-4">문장분석</h2>
            <span className="text-[9pt] tracking-widest text-gray-400 uppercase">Sentence Structure ({mode === 'expert' || mode === 'minimal' ? 'Expert' : 'Beginner'})</span>
@@ -360,9 +378,10 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
             })}
         </div>
       </div>
+    )}
 
       {/* --- PAGE 5: Signal Analysis (New Section) --- */}
-      {data.signalAnalysis && !isMinimal && (
+      {data.signalAnalysis && !isMinimal && !isWorkbook && (
         <div className="page-break">
             <div className="flex items-center mb-6 border-b border-teal-500 pb-2">
                 <div className="flex items-center mr-4">
