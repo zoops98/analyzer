@@ -265,7 +265,7 @@ const GRAMMAR_QUIZ_PROMPT = `
 </div>
 `;
 
-export const analyzeText = async (text: string, apiKey: string, mode: 'beginner' | 'expert' | 'minimal' = 'beginner'): Promise<AnalysisResult> => {
+export const analyzeText = async (text: string, apiKey: string, mode: 'beginner' | 'expert' | 'minimal' | 'workbook' = 'beginner'): Promise<AnalysisResult> => {
   if (!apiKey) {
     throw new Error("API Key is missing. Please provide a valid Google Gemini API Key.");
   }
@@ -317,6 +317,8 @@ export const analyzeText = async (text: string, apiKey: string, mode: 'beginner'
 
   const minimalInstruction = mode === 'minimal' 
     ? `**MINIMAL MODE**: You only need to provide 'overview' (paragraphSummary, backgroundKnowledge) and 'sentences' (id, original, translation, chunks, grammarNotes). Other fields like 'summary', 'structure', 'signalAnalysis', 'vocabulary', 'grammarPractice', 'paraphrasedText', 'comparison' can be empty or minimal placeholders.`
+    : mode === 'workbook'
+    ? `**WORKBOOK MODE**: Focus on 'vocabulary', 'comparison', 'grammarPractice', and 'sentences' (id, original, translation). You can SKIP 'chunks' (syntax analysis) and 'grammarNotes' inside 'sentences' to save tokens. Also SKIP 'overview', 'summary', 'structure', and 'signalAnalysis'.`
     : "";
 
   const prompt = `
@@ -329,7 +331,7 @@ export const analyzeText = async (text: string, apiKey: string, mode: 'beginner'
     
     Key Instructions:
     1. **Sentences**: Break down each sentence into grammatical chunks (Subject, Verb, Object, etc.).
-       ${structureLabelInstruction}
+       ${mode === 'workbook' ? 'In WORKBOOK mode, you can return an empty array for chunks.' : structureLabelInstruction}
        - Use specific labels for relative clauses: "관계대명사절" or "관계부사절" (unless in expert or minimal mode, then use "관계사" or "관계사'").
        - **CRITICAL LAYOUT RULE**: Do NOT group long clauses (like relative clauses or prepositional phrases longer than 3-4 words) into a single chunk. 
        - **MUST BREAK DOWN**: You MUST break down long clauses into smaller constituents (e.g. [Relative Pronoun], [Subject], [Verb]) to ensure the visual layout is aligned and readable. 
@@ -337,7 +339,7 @@ export const analyzeText = async (text: string, apiKey: string, mode: 'beginner'
     
     2. **GRAMMAR NOTES (Critical)**:
        For the 'grammarNotes' field in the JSON output, you MUST strictly follow the analysis rules below.
-       ${GRAMMAR_ANALYSIS_RULES}
+       ${mode === 'workbook' ? 'In WORKBOOK mode, you can return an empty array for grammarNotes.' : GRAMMAR_ANALYSIS_RULES}
        
        **Important Output Format for grammarNotes array**:
        - Do not output the full sentence again.
@@ -346,13 +348,13 @@ export const analyzeText = async (text: string, apiKey: string, mode: 'beginner'
        - Example: "[분사구문]: <b><u>Walking through the park</u></b> → 주어 I를 수식하는 분사구문..."
 
     3. **Summary & Main Idea (Detailed)**: 
-       ${SUMMARY_PROMPT_RULES}
+       ${mode === 'workbook' ? 'In WORKBOOK mode, provide minimal placeholders.' : SUMMARY_PROMPT_RULES}
 
     4. **Structure Analysis (Intro/Body/Conclusion)**:
-       ${STRUCTURE_PROMPT_RULES}
+       ${mode === 'workbook' || mode === 'minimal' ? 'In this mode, provide minimal placeholders.' : STRUCTURE_PROMPT_RULES}
 
     5. **Signal Analysis (Structure & Flow)**:
-       ${SIGNAL_ANALYSIS_RULES}
+       ${mode === 'workbook' || mode === 'minimal' ? 'In this mode, provide minimal placeholders.' : SIGNAL_ANALYSIS_RULES}
 
     6. **Vocabulary**: 
        - Extract exactly 12 key distinct difficult words.
