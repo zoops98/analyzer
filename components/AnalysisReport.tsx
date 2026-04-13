@@ -77,17 +77,17 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
 
   // Memoize shuffled sentences and blanks
   const shuffledSentences = useMemo(() => {
-      return data.sentences.map(s => ({
+      return data.sentences?.map(s => ({
           id: s.id,
           shuffled: shuffleSentence(s.original)
-      }));
+      })) || [];
   }, [data.sentences]);
 
   const blankSentences = useMemo(() => {
-      return data.sentences.map(s => ({
+      return data.sentences?.map(s => ({
           id: s.id,
           text: createBlanks(s.original)
-      }));
+      })) || [];
   }, [data.sentences]);
 
   return (
@@ -98,9 +98,9 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
       {/* --- PAGE 1: Overview & Guide --- */}
       <div className="page-break">
         <Header 
-          titleEn={data.summary.titleEn || 'Analysis Report'}
-          titleKr={data.summary.title || '본문분석'}
-          info={`${data.metadata.year || '2025'} > ${data.metadata.source || 'General Text'} > ${data.summary.topicEn || 'Analysis'}`}
+          titleEn={data.summary?.titleEn || 'Analysis Report'}
+          titleKr={data.summary?.title || '본문분석'}
+          info={`${data.metadata?.year || '2025'} > ${data.metadata?.source || 'General Text'} > ${data.summary?.topicEn || 'Analysis'}`}
         />
         
         <div className="mb-6 border rounded-lg overflow-hidden text-[9pt]">
@@ -184,10 +184,10 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
           
           <div className="bg-gray-50 p-5 rounded-lg border border-gray-200 mb-6 print:mb-4 shadow-sm">
               <p className="font-english text-justify leading-7 text-gray-800 text-[9pt] mb-3">
-                  {data.sentences.map(s => s.original).join(' ')}
+                  {data.sentences?.map(s => s.original).join(' ')}
               </p>
               <div className="border-t pt-3 text-gray-600 leading-relaxed font-light text-[9pt] text-justify">
-                  {data.sentences.map(s => s.translation).join(' ')}
+                  {data.sentences?.map(s => s.translation).join(' ')}
               </div>
           </div>
 
@@ -197,7 +197,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
                       <BookOpen className="w-3 h-3 mr-2" /> 배경지식
                   </h3>
                   <div className="text-[9pt] text-gray-700 leading-relaxed bg-blue-50/50 p-2 rounded">
-                      {data.overview.backgroundKnowledge}
+                      {data.overview?.backgroundKnowledge}
                   </div>
               </div>
               
@@ -212,8 +212,8 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
                            <div className="flex items-start bg-white border border-gray-200 p-2 rounded shadow-sm">
                               <span className="bg-indigo-100 text-indigo-800 text-[8pt] font-bold px-2 py-0.5 rounded mr-2 flex-shrink-0">서론</span>
                               <div className="text-[9pt] leading-tight">
-                                  <p className="font-bold text-gray-800">{data.structure.introduction.en}</p>
-                                  <p className="text-gray-600 text-[8pt]">{data.structure.introduction.kr}</p>
+                                  <p className="font-bold text-gray-800">{data.structure?.introduction?.en}</p>
+                                  <p className="text-gray-600 text-[8pt]">{data.structure?.introduction?.kr}</p>
                               </div>
                            </div>
                            
@@ -226,8 +226,8 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
                            <div className="flex items-start bg-white border border-gray-200 p-2 rounded shadow-sm">
                               <span className="bg-violet-100 text-violet-800 text-[8pt] font-bold px-2 py-0.5 rounded mr-2 flex-shrink-0">본론</span>
                               <div className="text-[9pt] leading-tight">
-                                  <p className="font-bold text-gray-800">{data.structure.body.en}</p>
-                                  <p className="text-gray-600 text-[8pt]">{data.structure.body.kr}</p>
+                                  <p className="font-bold text-gray-800">{data.structure?.body?.en}</p>
+                                  <p className="text-gray-600 text-[8pt]">{data.structure?.body?.kr}</p>
                               </div>
                            </div>
 
@@ -240,8 +240,8 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
                            <div className="flex items-start bg-white border border-gray-200 p-2 rounded shadow-sm">
                               <span className="bg-pink-100 text-pink-800 text-[8pt] font-bold px-2 py-0.5 rounded mr-2 flex-shrink-0">결론</span>
                               <div className="text-[9pt] leading-tight">
-                                  <p className="font-bold text-gray-800">{data.structure.conclusion.en}</p>
-                                  <p className="text-gray-600 text-[8pt]">{data.structure.conclusion.kr}</p>
+                                  <p className="font-bold text-gray-800">{data.structure?.conclusion?.en}</p>
+                                  <p className="text-gray-600 text-[8pt]">{data.structure?.conclusion?.kr}</p>
                               </div>
                            </div>
                       </div>
@@ -265,10 +265,10 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
               <div className="avoid-break h-full">
                   <div className="space-y-3 bg-purple-50/30 p-4 rounded-lg border border-purple-100 h-full">
                       {[
-                          { label: 'Theme', color: 'bg-purple-100 text-purple-800', contentKr: data.summary.topic, contentEn: data.summary.topicEn },
-                          { label: 'Title', color: 'bg-blue-100 text-blue-800', contentKr: data.summary.title, contentEn: data.summary.titleEn },
-                          { label: 'Main idea', color: 'bg-green-100 text-green-800', contentKr: data.summary.mainIdea, contentEn: data.summary.mainIdeaEn },
-                          { label: 'Summary', color: 'bg-orange-100 text-orange-800', contentKr: data.summary.summary, contentEn: data.summary.summaryEn },
+                          { label: 'Theme', color: 'bg-purple-100 text-purple-800', contentKr: data.summary?.topic, contentEn: data.summary?.topicEn },
+                          { label: 'Title', color: 'bg-blue-100 text-blue-800', contentKr: data.summary?.title, contentEn: data.summary?.titleEn },
+                          { label: 'Main idea', color: 'bg-green-100 text-green-800', contentKr: data.summary?.mainIdea, contentEn: data.summary?.mainIdeaEn },
+                          { label: 'Summary', color: 'bg-orange-100 text-orange-800', contentKr: data.summary?.summary, contentEn: data.summary?.summaryEn },
                       ].map((item, idx) => (
                           <div key={idx} className="flex flex-col border-b border-purple-100/50 pb-3 last:border-0 last:pb-0">
                               <span className={`inline-block px-2 py-0.5 rounded text-[8pt] font-bold w-fit mb-1 shadow-sm ${item.color}`}>{item.label}</span>
@@ -293,7 +293,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
         </div>
 
         <div className="space-y-8">
-            {data.sentences.map((sent, idx) => {
+            {data.sentences?.map((sent, idx) => {
                 
                 // --- EXPERT/MINIMAL MODE (Boxed Layout) ---
                 if (mode === 'expert' || mode === 'minimal') {
@@ -306,7 +306,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
                                         {idx + 1}
                                     </div>
                                     <div className="flex-1">
-                                        <SentenceParser chunks={sent.chunks} mode="expert" />
+                                        <SentenceParser chunks={sent.chunks || []} mode="expert" />
                                     </div>
                                 </div>
                              </div>
@@ -328,7 +328,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
                                          <span className="text-[8pt] font-bold text-indigo-600">문법</span>
                                      </div>
                                      <div className="p-3 text-[9pt] space-y-2 text-gray-800 flex-1">
-                                        {sent.grammarNotes.map((note, nIdx) => (
+                                        {sent.grammarNotes?.map((note, nIdx) => (
                                             <div key={nIdx} className="leading-relaxed border-b border-dashed border-indigo-100 last:border-0 pb-1 last:pb-0">
                                                 <span dangerouslySetInnerHTML={{ __html: note }} />
                                             </div>
@@ -350,7 +350,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
                             </div>
                             <div className="flex-1">
                                 <div className="mb-2">
-                                    <SentenceParser chunks={sent.chunks} mode="beginner" />
+                                    <SentenceParser chunks={sent.chunks || []} mode="beginner" />
                                 </div>
                                 
                                 <div className="flex items-start text-gray-600 text-[9pt] mb-2 bg-gray-50 p-2 rounded border-l-4 border-gray-300">
@@ -360,7 +360,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
 
                                 {sent.grammarNotes.length > 0 && (
                                     <div className="text-[9pt] space-y-1 text-gray-700 pl-2">
-                                        {sent.grammarNotes.map((note, nIdx) => (
+                                        {sent.grammarNotes?.map((note, nIdx) => (
                                             <div key={nIdx} className="flex items-start">
                                                 <div className="bg-black text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[8pt] mr-2 mt-0.5 flex-shrink-0">
                                                     {nIdx + 1}
@@ -400,7 +400,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
                         진술 분류 (G/S Classification)
                     </h3>
                     <div className="space-y-3">
-                        {data.signalAnalysis.classification.map((item, idx) => (
+                        {data.signalAnalysis.classification?.map((item, idx) => (
                             <div key={idx} className="flex items-start bg-gray-50 p-2 rounded border border-gray-100">
                                 <div className="flex flex-col items-center mr-3 min-w-[3rem]">
                                     <span className="text-[8pt] font-bold text-gray-500 mb-1">문장 {item.sentenceId}</span>
@@ -425,7 +425,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
                             주제 (Topic)
                         </h3>
                         <p className="text-[9pt] text-gray-800 leading-relaxed">
-                            {data.signalAnalysis.topicVsContrast.topic}
+                            {data.signalAnalysis?.topicVsContrast?.topic}
                         </p>
                     </div>
                     <div className="border rounded-lg p-4 bg-red-50/50 border-red-100">
@@ -433,7 +433,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
                             대립 정보 (Contrast)
                         </h3>
                         <p className="text-[9pt] text-gray-800 leading-relaxed">
-                            {data.signalAnalysis.topicVsContrast.contrast}
+                            {data.signalAnalysis?.topicVsContrast?.contrast}
                         </p>
                     </div>
                 </div>
@@ -446,9 +446,9 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
                             <span className="bg-teal-100 text-teal-800 w-5 h-5 flex items-center justify-center rounded-full text-[8pt] mr-2">3</span>
                             재진술 관계 (Restatement)
                         </h3>
-                         {data.signalAnalysis.restatement.length > 0 ? (
+                         {data.signalAnalysis.restatement?.length > 0 ? (
                             <div className="space-y-2">
-                                {data.signalAnalysis.restatement.map((item, idx) => (
+                                {data.signalAnalysis.restatement?.map((item, idx) => (
                                     <div key={idx} className="flex items-center text-[9pt] bg-teal-50 p-2 rounded">
                                         <span className="font-bold text-teal-800 mr-2 bg-white px-2 py-0.5 rounded border border-teal-100 shadow-sm">{item.relation}</span>
                                         <span className="font-medium text-gray-700 mr-2">[{item.sentenceIndices}]</span>
@@ -468,7 +468,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
                             구조 해석 요약
                         </h3>
                         <p className="text-[9pt] text-gray-800 leading-relaxed">
-                            {data.signalAnalysis.analysisSummary}
+                            {data.signalAnalysis?.analysisSummary}
                         </p>
                     </div>
                 </div>
@@ -480,7 +480,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
                         논리 흐름도 (Logical Flowchart)
                     </h3>
                     <div className="flex flex-col items-center space-y-2">
-                        {data.signalAnalysis.flowchart.map((step, idx) => (
+                        {data.signalAnalysis.flowchart?.map((step, idx) => (
                             <React.Fragment key={idx}>
                                 <div className="w-full max-w-lg bg-white border-2 border-teal-100 rounded-lg p-3 text-center shadow-sm relative group hover:border-teal-300 transition-colors">
                                      <span className="absolute top-2 left-2 text-[8pt] font-bold text-teal-200 group-hover:text-teal-400">0{idx+1}</span>
@@ -499,7 +499,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
       )}
 
       {/* --- PAGE 6: Vocabulary --- */}
-      {!isMinimal && (
+      {!isMinimal && data.vocabulary && (
         <div className="page-break">
           <div className="flex items-center mb-4 border-b border-green-500 pb-2">
              <h2 className="text-2xl font-bold text-green-700 mr-4">핵심어휘</h2>
@@ -507,7 +507,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-3 print:gap-x-4 print:gap-y-2">
-              {data.vocabulary.map((vocab, idx) => (
+              {data.vocabulary?.map((vocab, idx) => (
                   <div key={idx} className="border rounded-lg p-3 print:p-1.5 bg-white shadow-sm avoid-break">
                       <div className="flex justify-between items-baseline mb-1 border-b pb-1 border-gray-100">
                           <span className="text-[11pt] font-bold text-blue-700 font-english">{vocab.word}</span>
@@ -520,11 +520,11 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
                           </div>
                            <div className="flex">
                               <span className="w-14 flex-shrink-0 font-bold text-blue-400 whitespace-nowrap">[유의어]</span>
-                              <span className="flex-1 leading-tight">{vocab.synonyms.join(', ')}</span>
+                              <span className="flex-1 leading-tight">{vocab.synonyms?.join(', ')}</span>
                           </div>
                            <div className="flex">
                               <span className="w-14 flex-shrink-0 font-bold text-red-400 whitespace-nowrap">[반의어]</span>
-                              <span className="flex-1 leading-tight">{vocab.antonyms.join(', ')}</span>
+                              <span className="flex-1 leading-tight">{vocab.antonyms?.join(', ')}</span>
                           </div>
                           {vocab.example && (
                               <div className="flex mt-1 pt-1 border-t border-dashed border-gray-100">
@@ -540,7 +540,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
       )}
       
       {/* --- PAGE 7: Comparison --- */}
-      {!isMinimal && (
+      {!isMinimal && data.comparison && (
         <div className="page-break">
           <div className="flex items-center mb-4 border-b border-orange-500 pb-2">
              <h2 className="text-2xl font-bold text-orange-700 mr-4">문장비교</h2>
@@ -548,7 +548,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
           </div>
 
           <div className="space-y-4 print:space-y-2">
-              {data.comparison.map((comp, idx) => (
+              {data.comparison?.map((comp, idx) => (
                   <div key={idx} className="grid grid-cols-1 print:grid-cols-2 md:grid-cols-2 gap-4 print:gap-2 avoid-break text-[9pt] border-b border-gray-100 pb-4 print:pb-2 last:border-0">
                       <div className="bg-gray-50 p-3 print:p-2 rounded border">
                           <div className="font-bold text-blue-800 mb-1 text-[8pt] uppercase">Original</div>
@@ -581,8 +581,8 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
               <div className="col-span-6">Korean</div>
           </div>
           <div className="space-y-4 print:space-y-2">
-              {data.sentences.map((sent, idx) => (
-                  <div key={sent.id} className="grid grid-cols-12 gap-4 print:gap-2 items-start avoid-break border-b border-gray-100 pb-3 print:pb-2">
+              {data.sentences?.map((sent, idx) => (
+                  <div key={sent.id || idx} className="grid grid-cols-12 gap-4 print:gap-2 items-start avoid-break border-b border-gray-100 pb-3 print:pb-2">
                       <div className="col-span-6 flex">
                           <span className="text-[8pt] font-bold text-indigo-600 mr-2 mt-1 bg-indigo-50 w-4 h-4 flex items-center justify-center rounded-full flex-shrink-0 border border-indigo-100">{String(idx + 1).padStart(2, '0')}</span>
                           <p className="text-[9pt] text-gray-900 leading-relaxed font-english">{sent.original}</p>
@@ -607,8 +607,8 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
               icon={<MessageCircle className="w-6 h-6 text-teal-600" />}
           />
           <div className="space-y-4 print:space-y-2">
-               {data.sentences.map((sent, idx) => (
-                  <div key={sent.id} className="avoid-break">
+               {data.sentences?.map((sent, idx) => (
+                  <div key={sent.id || idx} className="avoid-break">
                       <div className="flex items-start mb-2 print:mb-1">
                           <span className="text-[8pt] font-bold text-white bg-teal-600 px-1.5 py-0.5 rounded mr-2 mt-0.5 shadow-sm">{String(idx + 1).padStart(2, '0')}</span>
                           <p className="text-[9pt] text-gray-900 font-english leading-relaxed">{sent.original}</p>
@@ -634,8 +634,8 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
               icon={<Shuffle className="w-6 h-6 text-rose-600" />}
           />
           <div className="space-y-4 print:space-y-2">
-               {data.sentences.map((sent, idx) => (
-                  <div key={sent.id} className="avoid-break">
+               {data.sentences?.map((sent, idx) => (
+                  <div key={sent.id || idx} className="avoid-break">
                       <div className="flex items-start mb-2 print:mb-1">
                           <div className="bg-rose-600 text-white text-[8pt] font-bold px-1.5 py-0.5 rounded mr-2 mt-0.5 shadow-sm">
                               {String(idx + 1).padStart(2, '0')}
@@ -667,8 +667,8 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
               icon={<PenTool className="w-6 h-6 text-cyan-600" />}
           />
           <div className="space-y-4 print:space-y-2">
-               {data.sentences.map((sent, idx) => (
-                  <div key={sent.id} className="avoid-break">
+               {data.sentences?.map((sent, idx) => (
+                  <div key={sent.id || idx} className="avoid-break">
                       <div className="flex items-start mb-1">
                            <span className="text-[9pt] font-black text-cyan-600 mr-2 mt-1.5">{String(idx + 1).padStart(2, '0')}</span>
                            <p className="text-[9pt] text-gray-800 font-english leading-relaxed tracking-wide">
@@ -693,8 +693,8 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
               icon={<Highlighter className="w-6 h-6 text-violet-600" />}
           />
           <div className="space-y-4 print:space-y-3">
-               {data.sentences.map((sent, idx) => (
-                  <div key={sent.id} className="avoid-break">
+               {data.sentences?.map((sent, idx) => (
+                  <div key={sent.id || idx} className="avoid-break">
                       <div className="flex items-start mb-1">
                           <span className="text-[8pt] font-bold text-violet-500 mr-2 mt-0.5 border border-violet-200 bg-violet-50 rounded px-1.5 py-0.5">{String(idx + 1).padStart(2, '0')}</span>
                           <p className="text-[9pt] text-gray-600 font-medium font-sans leading-relaxed">{sent.translation}</p>
@@ -726,8 +726,8 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
               icon={<Edit className="w-6 h-6 text-emerald-600" />}
           />
           <div className="space-y-4 print:space-y-3">
-               {data.sentences.map((sent, idx) => (
-                  <div key={sent.id} className="avoid-break">
+               {data.sentences?.map((sent, idx) => (
+                  <div key={sent.id || idx} className="avoid-break">
                       <div className="flex items-start mb-1">
                           <div className="bg-emerald-600 text-white text-[8pt] font-bold px-1.5 py-0.5 rounded mr-2 mt-0.5 shadow-sm">
                               {String(idx + 1).padStart(2, '0')}
@@ -769,7 +769,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
             <div className="space-y-8 mb-12 px-2">
                 <div 
                     className="font-english text-[10pt] leading-loose grammar-quiz-content"
-                    dangerouslySetInnerHTML={{ __html: data.grammarPractice.questions }}
+                    dangerouslySetInnerHTML={{ __html: data.grammarPractice?.questions || '' }}
                 />
             </div>
 
@@ -781,7 +781,7 @@ export const AnalysisReport: React.FC<Props> = ({ data, mode = 'beginner' }) => 
                 </h4>
                 <div 
                     className="text-[9pt] text-slate-700 bg-slate-50 p-4 rounded-lg border border-slate-200 leading-relaxed shadow-sm"
-                    dangerouslySetInnerHTML={{ __html: data.grammarPractice.answers }} 
+                    dangerouslySetInnerHTML={{ __html: data.grammarPractice?.answers || '' }} 
                 />
             </div>
         </div>
