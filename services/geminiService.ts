@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { AnalysisResult } from "../types";
+import { AnalysisResult, ModuleId } from "../types";
 
 const MODEL_NAME = "gemini-2.5-flash";
 
@@ -265,55 +265,72 @@ const GRAMMAR_QUIZ_PROMPT = `
 </div>
 `;
 
-export const analyzeText = async (text: string, apiKey: string, mode: 'beginner' | 'expert' | 'minimal' | 'workbook' = 'beginner'): Promise<AnalysisResult> => {
+export const analyzeText = async (
+  text: string, 
+  apiKey: string, 
+  mode: 'beginner' | 'expert' | 'minimal' | 'workbook' = 'beginner',
+  selectedModules: ModuleId[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+): Promise<AnalysisResult> => {
   if (!apiKey) {
     throw new Error("API Key is missing. Please provide a valid Google Gemini API Key.");
   }
 
   const ai = new GoogleGenAI({ apiKey: apiKey });
 
-  const isExpertOrMinimal = mode === 'expert' || mode === 'minimal';
+  // Optimization: Tell Gemini which parts to skip based on selectedModules
+  const skipInstructions = [];
+  if (!selectedModules.includes(2)) skipInstructions.push("- SKIP 'chunks' and 'grammarNotes' in 'sentences' (Syntax Analysis).");
+  if (!selectedModules.includes(3)) skipInstructions.push("- SKIP 'signalAnalysis' (Signal Analysis).");
+  if (!selectedModules.includes(4)) skipInstructions.push("- SKIP 'vocabulary' (Vocabulary).");
+  if (!selectedModules.includes(5)) skipInstructions.push("- SKIP 'comparison' and 'paraphrasedText' (Sentence Comparison).");
+  if (!selectedModules.includes(12)) skipInstructions.push("- SKIP 'grammarPractice' (Grammar Quiz).");
+  
+  const needsSentences = selectedModules.some(m => [2, 6, 7, 8, 9, 10, 11].includes(m));
+  if (!needsSentences) skipInstructions.push("- SKIP 'sentences' entirely.");
 
-  const structureLabelInstruction = isExpertOrMinimal 
-    ? `
-    **EXPERT MODE LABELING RULES (CRITICAL)**:
-    - **GROUPING RULE**: You MUST group words that form a single grammatical unit (e.g., noun phrases, prepositional phrases, infinitive phrases) into a SINGLE chunk with a SINGLE label. Do NOT split them into individual words unless they serve different grammatical functions.
-      - Bad: ["my" (O)], ["deepest" (O)], ["gratitude" (O)]
-      - Good: ["my deepest gratitude" (O)]
-    - Use the following concise symbols for the 'label' field:
-    - Main Clause: 
-      - Subject: "S"
-      - Verb: "V"
-      - Object: "O"
-      - Object Complement: "O.C"
-      - Subject Complement: "S.C"
-      - Modifier (Adjective phrase/word): "M(형)"
-      - Modifier (Adverbial phrase/word): "M(부)"
-      - Modifier (Prepositional phrase): "M(전)"
-      - Modifier (Relative clause): "M(관계사)"
-      - Conjunction: "접속사"
-    - Subordinate Clause (Dependent Clause):
-      - Subject: "S'"
-      - Verb: "V'"
-      - Object: "O'"
-      - Object Complement: "O.C'"
-      - Subject Complement: "S.C'"
-      - Modifier (Adjective phrase/word): "M'(형)"
-      - Modifier (Adverbial phrase/word): "M'(부)"
-      - Modifier (Prepositional phrase): "M'(전)"
-      - Modifier (Relative clause): "M'(관계사)"
-      - Conjunction: "접속사'"
+  const structureLabelInstruction = `
+    **LABELING RULES (CRITICAL - 100% COMPLIANCE REQUIRED)**:
+    - **EVERY SINGLE WORD/PHRASE** in the sentence MUST be part of a chunk. DO NOT leave any word without a chunk.
+    - **EVERY CHUNK** MUST have a 'translation' (직독직해). This is MANDATORY for all chunks.
+    - **EVERY CHUNK** MUST have a 'type'. If it's not a main component, it MUST be a modifier or connective.
     
-    Example: In "I think that he is happy", 
-    - "I" (S), "think" (V), "that" (접속사'), "he" (S'), "is" (V'), "happy" (S.C').
+    - **Modifier (M) Labeling (STRICT RULE - 100% CATEGORIZATION)**: 
+      - **NEVER** use a simple "M" for phrases. You MUST categorize them:
+      - **M(전)**: Prepositional phrases (e.g., "in the water", "from a child's weight")
+      - **M(형)**: Adjective phrases/words modifying nouns
+      - **M(부)**: Adverb phrases modifying verbs/adj/adv (e.g., "To determine if...")
+      - **M(분사구)**: Participle phrases modifying nouns
+      - **M(분사구문)**: Participle constructions replacing adverbial clauses (e.g., "including...", "compared to...")
+      - *Exception*: Only single-word adverbs or transition words (e.g., "However", "Therefore", "Second") can be labeled as "M" or "M(부)".
+      - **Subordinate Modifiers**: Use the same categories with a prime: **M'(전), M'(형), M'(부), M'(분사구), M'(분사구문)**.
     
-    **IMPORTANT**: Ensure that prepositional phrases like "for your support" are labeled as "M(전)" and kept as a single chunk.
-    `
-    : `
-    **BEGINNER MODE LABELING RULES**:
-    For the 'label' field in each chunk, use descriptive Korean labels:
-    - 주어, 동사, 목적어, 보어, 수식어구, 전치사구, 관계대명사절, 관계부사절, 접속사, 가주어, 진주어 등.
-    `;
+    - **Main Clause (STRICT RULE - 100% KOREAN FULL NAME)**: 
+      - Subject: "주어", Verb: "동사", Object: "목적어", Complement: "보어", Object Complement: "목적격보어", Subject Complement: "주격보어", Indirect Object: "간접목적어", Direct Object: "직접목적어"
+      - Special: "가주어", "진주어", "가목적어", "진목적어", "의미상주어"
+      - **NEVER** use abbreviations like "가S", "V", "C", "진S". Use full Korean names only.
+    
+    - **Subordinate Clause (STRICT RULE - SYMBOLS ONLY)**: 
+      - Elements inside MUST use ONLY symbols with a prime ('): S', V', O', C', O.C', I.O', D.O'.
+      - Modifiers inside MUST use the primed categories above (e.g., M'(전)).
+      - **ABSOLUTELY FORBIDDEN**: Do NOT include the clause name in parentheses in the 'label' field (e.g., NO "V'(관계대명사절)"). The 'label' field MUST contain ONLY the symbol (e.g., "V'").
+      - **Grammar Accuracy**: In a subject relative clause (e.g., "tools that help..."), 'that' is the subject (labeled "관계대명사절"), and the following word 'help' is the verb (**V'**), NOT S'.
+    
+    - **Connectives (MANDATORY)**: 
+      - The clause name (e.g., "관계대명사절", "명사절접", "부사절접") should ONLY appear on the conjunction or relative word itself in the 'label' field.
+      - To ensure correct highlighting in the UI, you MUST put the clause type in parentheses in the 'type' field (e.g., type: "V'(관계대명사절)"), but keep the 'label' field clean (e.g., label: "V'").
+    
+    - **Connectives/Conjunctions (MANDATORY)**: Every conjunction/connective MUST be labeled.
+      - "등위접": Coordinating conjunctions (and, but, or, so, for, yet, nor)
+      - "명사절접": Noun clause conjunctions (that, whether, if)
+      - "의문사절접": Interrogative clause conjunctions (who, what, when, where, why, how)
+      - "부사절접": Adverbial clause conjunctions (because, although, when, if, etc.)
+      - "관계대명사절": Relative pronoun clauses (who, which, that, whom, whose)
+      - "관계부사절": Relative adverb clauses (when, where, why, how)
+    
+    - **Special Components**: 가O, 진O, 의.S, 가S, 진S
+    - **Punctuation Rule**: Punctuation marks (commas, periods, etc.) SHOULD be included at the end of the 'text' of the preceding word's chunk. DO NOT omit them.
+    - **GROUPING RULE**: Group words that form a single grammatical unit into a SINGLE chunk.
+  `;
 
   const minimalInstruction = mode === 'minimal' 
     ? `**MINIMAL MODE**: You only need to provide 'overview' (paragraphSummary, backgroundKnowledge) and 'sentences' (id, original, translation, chunks, grammarNotes). Other fields like 'summary', 'structure', 'signalAnalysis', 'vocabulary', 'grammarPractice', 'paraphrasedText', 'comparison' can be empty or minimal placeholders.`
@@ -327,15 +344,27 @@ export const analyzeText = async (text: string, apiKey: string, mode: 'beginner'
     
     Output MUST be a valid JSON object adhering to the schema.
     
+    ## SPEED OPTIMIZATION (IMPORTANT)
+    To provide results faster, ONLY generate the following sections as requested:
+    ${skipInstructions.join('\n    ')}
+    - For skipped fields, return an empty array [] or empty object {}.
+    
+    ## SENTENCE ANALYSIS STYLE (CRITICAL)
+    - **Easy Explanation (쉬운 해설)**: For every sentence, provide a 'easyExplanation' field. 
+      - **TONE RULE**: Use a very soft, conversational, and friendly tone (e.g., "~해요", "~예요", "~죠", "~거든요", "~하답니다"). 
+      - **NEVER** use the formal "~다" ending. Imagine you are a kind teacher explaining to a student in a warm manner.
+    - **Chunk Translation**: Provide 'translation' for each chunk (직독직해). **MANDATORY FOR EVERY CHUNK**.
+    - **NO Synonyms/Antonyms**: Do NOT provide synonyms or antonyms in the chunks.
+    
     ${minimalInstruction}
     
     Key Instructions:
     1. **Sentences**: Break down each sentence into grammatical chunks (Subject, Verb, Object, etc.).
        ${mode === 'workbook' ? 'In WORKBOOK mode, you can return an empty array for chunks.' : structureLabelInstruction}
-       - Use specific labels for relative clauses: "관계대명사절" or "관계부사절" (unless in expert or minimal mode, then use "관계사" or "관계사'").
        - **CRITICAL LAYOUT RULE**: Do NOT group long clauses (like relative clauses or prepositional phrases longer than 3-4 words) into a single chunk. 
        - **MUST BREAK DOWN**: You MUST break down long clauses into smaller constituents (e.g. [Relative Pronoun], [Subject], [Verb]) to ensure the visual layout is aligned and readable. 
        - **IMPORTANT**: For appositive clauses (동격절), you MUST identify them and label them specifically as "동격 that절".
+       - **MANDATORY**: You MUST analyze EVERY sentence. Do NOT skip any sentence. Every sentence must have a full 'chunks' array with correct 'type' and 'label' fields.
     
     2. **GRAMMAR NOTES (Critical)**:
        For the 'grammarNotes' field in the JSON output, you MUST strictly follow the analysis rules below.
@@ -494,6 +523,7 @@ export const analyzeText = async (text: string, apiKey: string, mode: 'beginner'
                 id: { type: Type.INTEGER },
                 original: { type: Type.STRING },
                 translation: { type: Type.STRING },
+                easyExplanation: { type: Type.STRING, description: "Simplified explanation in Korean for easier understanding" },
                 mainGrammar: { type: Type.STRING },
                 chunks: {
                   type: Type.ARRAY,
@@ -501,9 +531,11 @@ export const analyzeText = async (text: string, apiKey: string, mode: 'beginner'
                     type: Type.OBJECT,
                     properties: {
                       text: { type: Type.STRING },
-                      type: { type: Type.STRING, description: "S, V, O, C, Prep, Mod, Conn, or empty" },
-                      label: { type: Type.STRING, description: "Korean label like 주어, 동사, 관계대명사절 etc." },
-                      translation: { type: Type.STRING, description: "Korean sub-translation for the chunk" }
+                      type: { type: Type.STRING, description: "Grammar type for color coding. MUST BE ONE OF: 주어, 동사, 목적어, 보어, 가주어, 진주어, 가목적어, 진목적어, 목적격보어, 주격보어, 간접목적어, 직접목적어, M(전), M(형), M(부), M(분사구), M(분사구문), S', V', O', C', O.C', I.O', D.O', M'(전), M'(형), M'(부), M'(분사구), M'(분사구문), 명사절접, 부사절접, 관계대명사절, 관계부사절, 등위접" },
+                      label: { type: Type.STRING, description: "Display label. Main clause: 주어, 동사, 목적어, 보어, 가주어, 진주어, 가목적어, 진목적어, 목적격보어, 주격보어, 간접목적어, 직접목적어. Subordinate clause: ONLY symbols like S', V', O', C', O.C', I.O', D.O', M'(전), M'(부). Connectives: 명사절접, 부사절접, 관계대명사절, 관계부사절, 등위접." },
+                      translation: { type: Type.STRING, description: "Korean sub-translation for the chunk" },
+                      synonyms: { type: Type.STRING, description: "Synonyms prefixed with '유:'" },
+                      antonyms: { type: Type.STRING, description: "Antonyms prefixed with '반:'" }
                     }
                   }
                 },
