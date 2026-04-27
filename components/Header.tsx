@@ -4,15 +4,20 @@ interface HeaderProps {
   titleEn: string;
   titleKr: string;
   info: string;
+  academyName?: string;
+  materialTitle?: string;
 }
 
-export const Header: React.FC<HeaderProps> = ({ titleEn, titleKr, info }) => {
+export const Header: React.FC<HeaderProps> = ({ titleEn, titleKr, info, academyName = '', materialTitle = '' }) => {
   return (
     <div className="bg-slate-900 rounded-xl p-6 mb-8 shadow-lg print:bg-white print:text-black print:shadow-none print:border-b-2 print:border-black print:rounded-none print:p-0 print:pb-4">
       {/* Top Row: Badge Only */}
       <div className="flex items-center mb-3">
         <span className="bg-indigo-600 text-white text-[11pt] font-bold px-3 py-1 rounded tracking-wide print:bg-gray-200 print:text-gray-800">
-          Zoops AI 학습자료 Pro
+          {academyName || materialTitle 
+            ? `${academyName}${academyName && materialTitle ? ' - ' : ''}${materialTitle ? `교재명: ${materialTitle}` : ''}`
+            : 'Zoops AI 학습자료 Pro'
+          }
         </span>
       </div>
 
