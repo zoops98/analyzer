@@ -1,10 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { analyzeText } from './services/geminiService';
-import { AnalysisResult } from './types';
+import { AnalysisResult, ModuleId, ALL_MODULES } from './types';
 import { AnalysisReport } from './components/AnalysisReport';
-import { Sparkles, BookText, AlertCircle, FileDown, Settings, Key, X, GraduationCap, School } from 'lucide-react';
+import { Sparkles, BookText, AlertCircle, FileDown, Settings, Key, X, GraduationCap, School, CheckCircle2, LayoutGrid } from 'lucide-react';
 
 const SAMPLE_TEXT = `Hello, dear directors and teachers, I am Zoops, the creator of this application. I would like to express my deepest gratitude for your continued support and interest in our service. It is truly an honor to provide tools that help you and your students achieve academic excellence. We will continue to improve and evolve to better serve your educational needs in the future.`;
+
+const MODULE_CONFIG: { id: ModuleId; name: string; desc: string; mandatory?: boolean }[] = [
+  { id: 1, name: '(1) 본문개요', desc: '원문 구성 및 전체 요약', mandatory: true },
+  { id: 2, name: '(2) 문장분석', desc: 'AI 구문분석 표준 상세 분석' },
+  { id: 3, name: '(3) 시그널분석', desc: 'G/S 분류 및 논리 흐름도' },
+  { id: 4, name: '(4) 핵심어휘', desc: '유의어/반의어 포함 단어장' },
+  { id: 5, name: '(5) 문장비교', desc: '원문 vs 패러프레이징 비교' },
+  { id: 6, name: '(6) 본문노트', desc: '영/한 대역 정리' },
+  { id: 7, name: '(7) 한줄해석', desc: '단위별 끊어 읽기 연습' },
+  { id: 8, name: '(8) 어순배열', desc: '단어 셔플 퀴즈' },
+  { id: 9, name: '(9) 빈칸쓰기', desc: '주요 어휘/어법 빈칸' },
+  { id: 10, name: '(10) 필사연습', desc: '구조 파악용 따라쓰기' },
+  { id: 11, name: '(11) 영작연습', desc: '한글 보고 영작하기' },
+  { id: 12, name: '(12) 어법선택', desc: '문맥상 올바른 형태 고르기' },
+];
 
 function App() {
   const [input, setInput] = useState(SAMPLE_TEXT);
@@ -12,6 +27,11 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analysisMode, setAnalysisMode] = useState<'beginner' | 'expert' | 'minimal' | 'workbook'>('beginner');
+  const [selectedModules, setSelectedModules] = useState<ModuleId[]>([1, 2, 4, 6, 12]); // Default selection
+  
+  // Custom Header Info
+  const [academyName, setAcademyName] = useState('');
+  const [materialTitle, setMaterialTitle] = useState('');
   
   // API Key State
   const [apiKey, setApiKey] = useState('');
@@ -42,6 +62,16 @@ function App() {
     }
   };
 
+  const toggleModule = (id: ModuleId) => {
+    if (id === 1) return; // Mandatory
+    setSelectedModules(prev => 
+      prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
+    );
+  };
+
+  const selectAllModules = () => setSelectedModules([...ALL_MODULES]);
+  const deselectAllModules = () => setSelectedModules([1]);
+
   const handleAnalyze = async (mode: 'beginner' | 'expert' | 'minimal' | 'workbook') => {
     if (!input.trim()) return;
     
@@ -54,7 +84,7 @@ function App() {
     setAnalysisMode(mode);
     setError(null);
     try {
-      const data = await analyzeText(input, apiKey, mode);
+      const data = await analyzeText(input, apiKey, mode, selectedModules);
       setResult(data);
     } catch (err) {
         console.error(err);
@@ -209,15 +239,76 @@ function App() {
                     <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                         Enter English Text
                     </h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">학원명 (Academy Name)</label>
+                            <input 
+                                type="text"
+                                value={academyName}
+                                onChange={(e) => setAcademyName(e.target.value)}
+                                placeholder="예: ZoopsBooks"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">교재명/지문정보 (Material Title)</label>
+                            <input 
+                                type="text"
+                                value={materialTitle}
+                                onChange={(e) => setMaterialTitle(e.target.value)}
+                                placeholder="예: ZoopsBooks고 5학년 외부지문"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            />
+                        </div>
+                    </div>
+
                     <div className="mt-1">
                         <textarea
-                            rows={12}
+                            rows={8}
                             className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md p-3 font-english bg-white text-slate-900"
                             placeholder="Paste your English exam passage here..."
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                         />
                     </div>
+
+                    {/* Module Selection Section */}
+                    <div className="mt-6">
+                        <div className="flex justify-between items-center mb-3">
+                            <h4 className="text-sm font-bold text-gray-700">생성할 학습 모듈 선택</h4>
+                            <div className="flex space-x-2">
+                                <button onClick={selectAllModules} className="text-[10px] text-blue-600 hover:underline">전체 선택</button>
+                                <button onClick={deselectAllModules} className="text-[10px] text-gray-500 hover:underline">전체 해제</button>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            {MODULE_CONFIG.map((mod) => (
+                                <button
+                                    key={mod.id}
+                                    onClick={() => toggleModule(mod.id)}
+                                    className={`relative flex flex-col items-start p-2.5 rounded-lg border text-left transition-all ${
+                                        selectedModules.includes(mod.id)
+                                            ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-500'
+                                            : 'bg-white border-gray-200 hover:border-gray-300'
+                                    } ${mod.mandatory ? 'cursor-default' : 'cursor-pointer'}`}
+                                >
+                                    <div className="flex justify-between items-start w-full mb-1">
+                                        <span className={`text-[11px] font-bold ${selectedModules.includes(mod.id) ? 'text-blue-700' : 'text-gray-700'}`}>
+                                            {mod.name}
+                                        </span>
+                                        {selectedModules.includes(mod.id) && (
+                                            <CheckCircle2 className="w-3 h-3 text-blue-600" />
+                                        )}
+                                    </div>
+                                    <span className="text-[9px] text-gray-500 leading-tight line-clamp-1">
+                                        {mod.desc}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     {error && (
                         <div className="mt-4 bg-red-50 border-l-4 border-red-400 p-4">
                             <div className="flex">
@@ -232,75 +323,21 @@ function App() {
                     )}
                     
                     {/* Buttons Grid */}
-                    <div className="mt-5 grid grid-cols-1 gap-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            {/* Beginner Button (Left) */}
-                            <button
-                                onClick={() => handleAnalyze('beginner')}
-                                disabled={loading || !input.trim()}
-                                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed transition-all"
-                            >
-                                {loading && analysisMode === 'beginner' ? (
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                ) : (
-                                    <School className="w-5 h-5 mr-2" />
-                                )}
-                                AI 분석독해 초보
-                            </button>
-
-                            {/* Expert Button (Right) */}
-                            <button
-                                onClick={() => handleAnalyze('expert')}
-                                disabled={loading || !input.trim()}
-                                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed transition-all"
-                            >
-                                {loading && analysisMode === 'expert' ? (
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                ) : (
-                                    <GraduationCap className="w-5 h-5 mr-2" />
-                                )}
-                                AI 분석독해 고수
-                            </button>
-                        </div>
-                        
-                        {/* Minimal Button (Full Width) */}
+                    <div className="mt-6">
                         <button
-                            onClick={() => handleAnalyze('minimal')}
+                            onClick={() => handleAnalyze('beginner')}
                             disabled={loading || !input.trim()}
-                            className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-md shadow-md text-base font-black text-white bg-slate-800 hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 disabled:bg-slate-400 disabled:cursor-not-allowed transition-all"
+                            className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-lg font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed transition-all transform active:scale-[0.98]"
                         >
-                            {loading && analysisMode === 'minimal' ? (
+                            {loading ? (
                                 <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
                             ) : (
-                                <Sparkles className="w-6 h-6 mr-2 text-yellow-400" />
+                                <LayoutGrid className="w-6 h-6 mr-2" />
                             )}
-                            AI 구문분석만
-                        </button>
-
-                        {/* Workbook Button (Full Width) */}
-                        <button
-                            onClick={() => handleAnalyze('workbook')}
-                            disabled={loading || !input.trim()}
-                            className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-md shadow-md text-base font-black text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-green-400 disabled:cursor-not-allowed transition-all"
-                        >
-                            {loading && analysisMode === 'workbook' ? (
-                                <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                            ) : (
-                                <BookText className="w-6 h-6 mr-2 text-green-300" />
-                            )}
-                            워크북만
+                            대시보드형 학습 자료 생성하기
                         </button>
                     </div>
                 </div>
@@ -315,7 +352,13 @@ function App() {
                         ← Create New Analysis
                     </button>
                 </div>
-                <AnalysisReport data={result} mode={analysisMode} />
+                <AnalysisReport 
+                    data={result} 
+                    mode={analysisMode} 
+                    selectedModules={selectedModules} 
+                    academyName={academyName}
+                    materialTitle={materialTitle}
+                />
             </div>
         )}
       </main>

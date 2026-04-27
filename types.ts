@@ -16,12 +16,15 @@ export interface SentenceChunk {
   type: ChunkType | string;
   label?: string; // Detailed label like "주어", "동사"
   translation?: string; // Optional sub-translation for the chunk
+  synonyms?: string; // New: synonyms for expansion (e.g. "유: word")
+  antonyms?: string; // New: antonyms for expansion (e.g. "반: word")
 }
 
 export interface SentenceAnalysis {
   id: number;
   original: string;
   translation: string;
+  easyExplanation?: string; // New: simplified explanation for students
   chunks: SentenceChunk[];
   grammarNotes: string[]; // Numbered points explaining grammar
   mainGrammar: string; // Short summary of main grammar point (e.g. "not only A but also B")
@@ -110,3 +113,7 @@ export interface AnalysisResult {
     paraphrased: string;
   }[];
 }
+
+export type ModuleId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+
+export const ALL_MODULES: ModuleId[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
